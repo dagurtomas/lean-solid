@@ -1,4 +1,49 @@
-# Liquid Tensor Experiment
+# Formalising solid abelian groups
+
+The goal of this repository is to formalise the definition of solid abelian groups and theorems about them from Lectures V and VI in the lecture notes [Condensed.pdf](https://people.mpim-bonn.mpg.de/scholze/Condensed.pdf) by Peter Scholze.
+
+It is forked from the Liquid Tensor Experiment (see https://github.com/leanprover-community/lean-liquid.git and more about it below), and builds on lots of the basic definitions and results about condensed sets and abelian groups formalised there.
+
+## How to browse this repository
+
+### Getting the project
+
+To install a Lean development environment on your computer please use the
+[installation instructions](https://leanprover-community.github.io/get_started.html#regular-install)
+to install Lean and a supporting toolchain.
+After that, download and open a copy of the repository
+by executing the following command in a terminal:
+```
+leanproject get lean-solid
+code lean-solid
+```
+For detailed instructions on how to work with Lean projects,
+see [this](https://leanprover-community.github.io/install/project.html). The script `scripts/get-cache.sh`
+in the folder `lean-sold` will download the `olean` files created by our continuous integration. This
+will save you some time by not havig to do `leanproject build`.
+
+### Reading the project
+
+With the project opened in VScode,
+you are all set to start exploring the code.
+There are two pieces of functionality that help a lot when browsing through Lean code:
+
+* "Go to definition": If you right-click on a name of a definition or lemma
+  (such as `Lbar`, or `Tinv_continuous`), then you can choose "Go to definition" from the menu,
+  and you will be taken to the relevant location in the source files.
+  This also works by `Ctrl`-clicking on the name.
+* "Goal view": in the event that you would like to read a *proof*,
+  you can step through the proof line-by-line,
+  and see the internals of Lean's "brain" in the Goal window.
+  If the Goal window is not open,
+  you can open it by clicking on one of the icons in the top right hand corner.
+
+### Important files in the project
+
+* All the Lean code (the juicy stuff) is contained in the directory `src/`.
+* Everything added by me for the project about solid abelian groups so far is contained in the directory src/solid/
+
+## Liquid Tensor Experiment
 
 [![](https://github.com/leanprover-community/lean-liquid/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/leanprover-community/lean-liquid/actions/workflows/build.yml)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/leanprover-community/lean-liquid)
@@ -7,15 +52,15 @@ For the eponymous blogpost by Peter Scholze which started it all: see https://xe
 
 The main aim of this community-owned repository is to *digitise* some mathematical definitions, theorem statements and theorem proofs. Digitisation, or formalisation, is a process where the source material, typically a mathematical textbook or a pdf file or website or video, is transformed into definitions in a target system consisting of a computer implementation of a logical theory (such as set theory or type theory).
 
-## The source
+### The source
 
 The main "source" definitions, theorems and proofs in this repository are all taken from Scholze's Bonn lecture notes [Analytic.pdf](https://www.math.uni-bonn.de/people/scholze/Analytic.pdf) explaining some of his work with Clausen on the theory of solid and liquid modules, and on their development of a new approach to certain proofs in complex analytic geometry.
 
-## The target
+### The target
 
 The formal system which we are using as a target system is Lean's dependent type theory. Lean is a project being developed at Microsoft Research by Leonardo de Moura and his team. Our formalisation could not have even started without a major classical mathematical library backing it up, and so we chose Lean 3 as the engine behind the project. Although Lean 4's type theory is the same as Lean 3's type theory, it currently lacks the mathematical infrastructure needed for this project.
 
-## Brief overview of the project
+### Brief overview of the project
 
 The challenge in the blog post is to formalise its `Theorem 1.1`, a variant of `Analytic 9.1` (i.e. Theorem 9.1 of [`Analytic.pdf`](https://www.math.uni-bonn.de/people/scholze/Analytic.pdf)) in Lean.
 We chose to use Lean 3 because of the advanced state of its classical mathematics library `mathlib`, an essential ingredient.
@@ -29,7 +74,7 @@ The preliminary announcement of a proof of Theorem 9.4 was made on 28th May 2021
 The second half of the project was [completed](https://leanprover-community.github.io/blog/posts/lte-final/) on 14th July 2022.
 Together, the two components give a formal verification of Theorem 1.1 of the blogpost.
 
-## The formal statement of `Analytic 9.4`
+### The formal statement of `Analytic 9.4`
 
 The statement can be found in [`src/liquid.lean`](https://github.com/leanprover-community/lean-liquid/blob/master/src/liquid.lean#L37)
 
@@ -43,7 +88,7 @@ theorem first_target :
 See [`src/liquid.lean`](https://github.com/leanprover-community/lean-liquid/blob/master/src/liquid.lean#40)
 for details on how to read this statement.
 
-## The formal statement of `Theorem 1.1`
+### The formal statement of `Theorem 1.1`
 
 The statement can be found in [`src/challenge.lean`](https://github.com/leanprover-community/lean-liquid/blob/master/src/challenge.lean#L28)
 
@@ -54,9 +99,9 @@ theorem liquid_tensor_experiment (S : Profinite.{0}) (V : pBanach.{0} p) :
   ∀ i > 0, Ext i (ℳ_{p'} S) V ≅ 0 :=
 ```
 
-## How to browse this repository
+### How to browse this repository
 
-### Blueprint
+#### Blueprint
 
 Below we explain how to engage with the Lean code directly.
 We also provide a [blueprint](https://leanprover-community.github.io/liquid/)
@@ -65,7 +110,7 @@ including two [dependency](https://leanprover-community.github.io/liquid/dep_gra
 of the main ingredients in the repository.
 All material in the blueprint is cross-referenced with the Lean formalization using hyperlinks.
 
-### Getting the project
+#### Getting the project
 
 At the moment, we support two ways of browsing this repository:
 Either via Gitpod or by using a Lean development environment.
@@ -91,7 +136,7 @@ see [this](https://leanprover-community.github.io/install/project.html). The scr
 in the folder `lean-liquid` will download the `olean` files created by our continuous integration. This
 will save you some time by not havig to do `leanproject build`.
 
-### Reading the project
+#### Reading the project
 
 With the project opened in VScode,
 you are all set to start exploring the code.
@@ -107,7 +152,7 @@ There are two pieces of functionality that help a lot when browsing through Lean
   If the Goal window is not open,
   you can open it by clicking on one of the icons in the top right hand corner.
 
-### Important files in the project
+#### Important files in the project
 
 * All the Lean code (the juicy stuff) is contained in the directory `src/`.
 * The file `src/challenge.lean` contains the statement of the main theorem.
@@ -116,7 +161,7 @@ There are two pieces of functionality that help a lot when browsing through Lean
   These files should form convincing evidence that we did not make a mistake in formalizing the necessary definitions.
 * The directory `src/for_mathlib/` contains preliminary material that is gradually being moved to mathlib, the main library of mathematics for Lean.
 
-## Brief note on type theory
+### Brief note on type theory
 
 Lean is based on type theory,
 which means that some things work slightly differently from set theory.
@@ -142,7 +187,7 @@ see the dedicated
 [page](https://leanprover-community.github.io/lean-perfectoid-spaces/type_theory.html)
 on the perfectoid project website.
 
-## Source reference
+### Source reference
 
 `[Analytic]` : http://www.math.uni-bonn.de/people/scholze/Analytic.pdf
 
