@@ -4,44 +4,19 @@ The goal of this repository is to formalise the definition of solid abelian grou
 
 It is forked from the Liquid Tensor Experiment (see https://github.com/leanprover-community/lean-liquid.git and more about it below), and builds on lots of the basic definitions and results about condensed sets and abelian groups formalised there.
 
-## How to browse this repository
+## Getting and browsing the repository
 
-### Getting the project
-
-To install a Lean development environment on your computer please use the
-[installation instructions](https://leanprover-community.github.io/get_started.html#regular-install)
-to install Lean and a supporting toolchain.
-After that, download and open a copy of the repository
-by executing the following command in a terminal:
-```
-leanproject get lean-solid
-code lean-solid
-```
-For detailed instructions on how to work with Lean projects,
-see [this](https://leanprover-community.github.io/install/project.html). The script `scripts/get-cache.sh`
-in the folder `lean-sold` will download the `olean` files created by our continuous integration. This
-will save you some time by not havig to do `leanproject build`.
-
-### Reading the project
-
-With the project opened in VScode,
-you are all set to start exploring the code.
-There are two pieces of functionality that help a lot when browsing through Lean code:
-
-* "Go to definition": If you right-click on a name of a definition or lemma
-  (such as `Lbar`, or `Tinv_continuous`), then you can choose "Go to definition" from the menu,
-  and you will be taken to the relevant location in the source files.
-  This also works by `Ctrl`-clicking on the name.
-* "Goal view": in the event that you would like to read a *proof*,
-  you can step through the proof line-by-line,
-  and see the internals of Lean's "brain" in the Goal window.
-  If the Goal window is not open,
-  you can open it by clicking on one of the icons in the top right hand corner.
-
-### Important files in the project
-
-* All the Lean code (the juicy stuff) is contained in the directory `src/`.
+* Install a Lean development environment following the
+  [installation instructions](https://leanprover-community.github.io/get_started.html#regular-install).
+* To download and open a copy of the repository
+  by executing the following command in a terminal:
+  ```
+  leanproject get lean-solid
+  code lean-solid
+  ```
 * Everything added by me for the project about solid abelian groups so far is contained in the directory src/solid/
+
+The contents of the README file from the Liquid tensor experiment follow:
 
 ## Liquid Tensor Experiment
 
