@@ -1,123 +1,32 @@
-import condensed.ab
 import topology.category.Profinite.as_limit
 import topology.category.Top.basic
 import category_theory.limits.has_limits
-import hacks_and_tricks.by_exactI_hack
-
+import solid.colim_hom_injective
 
 open category_theory
+open category_theory.limits
 open Profinite
--- open classical
-open Condensed
 
 noncomputable theory
 
--- set_option pp.implicit true
--- set_option pp.universes true
--- set_option pp.all true
--- set_option class.instance_max_depth 100
-
 universe u
 
-variables (S T : Profinite.{u}) -- [inhabited (discrete_quotient S)]
-variables (X : Top.{u}) [discrete_topology X]
-variables (i j : discrete_quotient S)
-variables (Y : Fintype.{u})
-variables (f : (to_Top.obj S) ⟶ X)
-
-def Cont_out (Y : Top.{u}) : Top.{u} ⥤ Type u :=
-{
-  obj := λ X, (Y ⟶ X),
-  map := λ X₁ X₂ f, (λ g, g ≫ f),
-  map_id' := by { intros, ext, refl, },
-  map_comp' := by { intros, ext, refl, },
-}
-
-def Cont_in (X : Top.{u}) : Top.{u}ᵒᵖ ⥤ Type u :=
-{
-  obj := λ Y, (Y.unop ⟶ X),
-  map := λ X₁ X₂ f, (λ g, f.unop ≫ g),
-  map_id' := by { intros, ext, refl, },
-  map_comp' := by { intros, ext, refl, },
-}
-
-def fin_incl : Fintype.{u} ⥤ Type u :=
-{
-  obj := λ X, X,
-  map := λ X₁ X₂ f, f,
-  map_id' := by { intros, refl, },
-  map_comp' := by { intros, refl, },
-}
-
-def Colim_diagram (X : Top.{u}) : (discrete_quotient S)ᵒᵖ ⥤ Type u :=
-  S.fintype_diagram.op ⋙ fin_incl.op ⋙ Top.discrete.op ⋙ (Cont_in X)
-
-instance S_colim_exists : limits.has_colimit (Colim_diagram S X) :=
-begin
-  apply_instance,
-end
-
-def CSX_as_cone_map (S : Profinite.{u}) (X : Top.{u}) : (Colim_diagram S X) ⟶ (category_theory.functor.const (discrete_quotient S)ᵒᵖ).obj ((to_Top.obj S) ⟶ X) :=
-{app :=
-    begin
-      intros i,
-      refine as_hom _,
-      dsimp,
-      intros a,
-      exact (S.as_limit_cone.π.app i.unop) ≫ a,
-    end,
-  naturality' :=
-    begin
-      intros i j f,
-      tidy,
-    end,
-}
-
-def CSX_as_cone (S : Profinite.{u}) (Y : Top.{u}) : limits.cocone (Colim_diagram S Y) :=
-{
-  X := ((to_Top.obj S) ⟶ Y),
-  ι := CSX_as_cone_map S Y,
-}
-
-def can (S : Profinite.{u}) (X : Top.{u}) : ((limits.colimit (Colim_diagram S X)) ⟶ ((to_Top.obj S) ⟶ X)) :=
-begin
-  exact limits.colimit.desc (Colim_diagram S X) (CSX_as_cone S X),
-end
-
 lemma to_im_cont {X Y : Top.{u}} (f : X ⟶ Y) : continuous (set.range_factorization f) :=
-begin
-  have hfc : continuous f,
-  exact continuous_map.continuous f,
-  have h : ∀ (x : X), f x ∈ set.range f,
-  intros x,
-  exact set.mem_range_self x,
-  exact continuous.subtype_mk hfc h,
-end
+  continuous.subtype_mk (continuous_map.continuous f) (λ x, set.mem_range_self x)
 
-def im {X Y : Top.{u}} (f: X ⟶ Y) : Top.{u} :=
-begin
-  have imf_top : topological_space (set.range f),
-  apply_instance,
-  exact ⟨(set.range f), imf_top⟩,
-end
+def im {X Y : Top.{u}} (f: X ⟶ Y) : Top.{u} := ⟨(set.range f), subtype.topological_space⟩
 
 instance im_discrete {X Y : Top.{u}} (f : X ⟶ Y) [discrete_topology Y] : discrete_topology (im f) :=
-begin
-  exact subtype.discrete_topology,
-end
+  subtype.discrete_topology
 
-def to_im {X Y : Top.{u}} (f : X ⟶ Y) : X ⟶ im f :=
-begin
-  refine ⟨set.range_factorization f, _⟩,
-  norm_num,
-  exact to_im_cont f,
-end
+def to_im {X Y : Top.{u}} (f : X ⟶ Y) : X ⟶ im f := ⟨set.range_factorization f, to_im_cont f⟩
 
-lemma to_im_surj {X Y : Top.{u}} (f : X ⟶ Y) : function.surjective (to_im f) :=
-begin
-  tidy,
-end
+lemma to_im_surj {X Y : Top.{u}} (f : X ⟶ Y) : function.surjective (to_im f) := by tidy
 
+lemma to_Top_iso_limit (S : Profinite.{u}) : to_Top.obj S ≅ limit (S.diagram ⋙ to_Top) :=
+begin
+  sorry,
+end
 
 def im_as_discrete_quotient {S : Profinite.{u}} {X : Top.{u}} (g : (to_Top.obj S) ⟶ X) [discrete_topology X] : discrete_quotient S :=
 begin
@@ -192,20 +101,6 @@ begin
   refl,
 end
 
--- noncomputable lemma im_as_disc_equiv_im {S : Profinite.{u}} {X : Top.{u}} (f : (to_Top.obj S) ⟶ X) [discrete_topology X] :
---   ↥(im_as_discrete_quotient f) ≃ ↥(im f) :=
--- begin
---   rw im_eq_quotient_by_kernel f,
---   sorry,
---   -- suffices h : (im f) = (set.range (to_im f)),
---   -- rw h,
---   -- refl,
---   -- rw h,
---   -- exact setoid.quotient_ker_equiv_range (to_im f),
--- end
-
--- \ u-| = ↥
-
 def incl_im {X Y : Top.{u}} (f : X ⟶ Y) : (im f) ⟶ Y :=
 begin
   let i : set.range f → Y := λ y, y,
@@ -224,8 +119,7 @@ end
 lemma im_finite {X : CompHaus.{u}} {Y : Top.{u}}
   [discrete_topology Y] (f : (CompHaus.to_Top X) ⟶ Y) : fintype (im f) :=
 begin
-  have X_comp : is_compact (set.univ : set X),
-  exact compact_univ,
+  have X_comp : is_compact (set.univ : set X) := compact_univ,
   have im_comp : is_compact (set.range f),
   refine is_compact_range _,
   exact continuous_map.continuous f,
@@ -264,7 +158,7 @@ begin
 end
 
 def incl_im' {S : Profinite.{u}} {X : Top.{u}} (f : (to_Top.obj S) ⟶ X) [discrete_topology X] :
-  Top.discrete.obj (fin_incl.obj (S.fintype_diagram.obj (im_as_discrete_quotient f))) ⟶ X :=
+  Top.discrete.obj (Fintype.incl.obj (S.fintype_diagram.obj (im_as_discrete_quotient f))) ⟶ X :=
 begin
   have heq1 : (im_as_discrete_quotient f).rel = (im_as_eq_rel f).rel := by refl,
   have h : ∀ a b : (to_Top.obj S), (im_as_discrete_quotient f).rel a b → f a = f b,
@@ -282,7 +176,7 @@ begin
   -- let setmap := incl_im_sets f,
   -- rw _inst_3 at setmap,
   rw ← (im_eq_quotient f) at setmap,
-  have setmap2 : Top.discrete.obj (fin_incl.obj (S.fintype_diagram.obj (im_as_discrete_quotient f)))
+  have setmap2 : Top.discrete.obj (Fintype.incl.obj (S.fintype_diagram.obj (im_as_discrete_quotient f)))
     → (im_as_discrete_quotient f) := λ x, x,
   let g := setmap ∘ setmap2,
   have hg : continuous g,
@@ -291,68 +185,24 @@ begin
   exact ⟨g, hg⟩,
 end
 
-lemma discreteness_condition_necessary {S : Profinite.{u}} {X : Top.{u}} [discrete_topology X] : is_iso (can S X) :=
+
+lemma discreteness_condition_necessary {S : Profinite.{u}} {X : Top.{u}} [discrete_topology X] :
+  is_iso (can_map_from_colim_of_homs_to_hom_from_limit X (S.diagram ⋙ Profinite.to_Top)) :=
 begin
-  refine (is_iso_iff_bijective (can S X)).mpr _,
+  refine (is_iso_iff_bijective (can_map_from_colim_of_homs_to_hom_from_limit X (S.diagram ⋙ Profinite.to_Top))).mpr _,
   split,
-  { intros a b,
-    intros h,
-    have h' : (im_as_discrete_quotient (can S X a)) = (im_as_discrete_quotient (can S X b)) := by tauto,
-    let i : discrete_quotient S := (im_as_discrete_quotient (can S X a)),
-    let j : discrete_quotient S := (im_as_discrete_quotient (can S X b)),
-    let F := Colim_diagram S X,
-    let FS := S.diagram,
-    -- let Slimcone : limits.limit_cone S.diagram := _,
-    let Slim₁ : S ≅ (limit_cone S.diagram).X := iso_as_limit_cone_lift S,
-
-    -- let Slim₂ := limits.limit.iso_limit_cone (Slimcone),
-    let φ : F.obj (opposite.op i) ⟶ ((to_Top.obj S) ⟶ X) := (limits.colimit.ι F (opposite.op i)) ≫ (can S X),
-    let pi := limits.limit.π FS i,
-    sorry,
-    -- let φ' := F.map (pi.op)
-    -- have hia : i = im_as_discrete_quotient (can S X a) := by refl,
-    -- have hib : i = im_as_discrete_quotient (can S X b) := by rw ← h',
-    -- have h_im : to_im (can S X a) = to_im (can S X b),
-    -- let n := limits.colimit.ι (Colim_diagram S X) (opposite.op i),
-    -- let im_a := incl_im' (can S X a),
-    -- -- have hab : im_a ≃ im_b,
-    -- have hab : Top.discrete.obj (fin_incl.obj (S.fintype_diagram.obj (im_as_discrete_quotient (can S X a)))) = Top.discrete.obj (fin_incl.obj (S.fintype_diagram.obj (im_as_discrete_quotient (can S X b)))),
-    -- rw h',
-    -- let im_b : Top.discrete.obj (fin_incl.obj (S.fintype_diagram.obj i)) := incl_im' (can S X b),
-    -- -- have im_b : Top.discrete.obj (fin_incl.obj (S.fintype_diagram.obj i)) ⟶ X,
-    -- -- { rw hib,
-    -- --   exact incl_im' (can S X b),
-    -- -- },
-    -- have hab' : im_a = im_b,
-
-    -- -- TODO: define im_i in a similar way.
-    -- -- have h2 : incl_im' (can S X a) = incl_im' (can S X b) := by tauto,
-    -- let na := (limits.colimit.ι (Colim_diagram S X) (opposite.op (im_as_discrete_quotient (can S X a)))),
-    -- let nb := (limits.colimit.ι (Colim_diagram S X) (opposite.op (im_as_discrete_quotient (can S X b)))),
-
-    -- apply_fun limits.colimit.hom_ext at h,
-    -- let ima := incl_im' (can S X a),
-    -- let na := limits.colimit.ι (Colim_diagram S X) (opposite.op (im_as_discrete_quotient (can S X a))),
-    -- have ha : a = na.app ima,
-    -- { sorry,
-    -- },
-    -- rw ha,
-    -- let imb := incl_im' (can S X b),
-    -- let nb := limits.colimit.ι (Colim_diagram S X) (opposite.op (im_as_discrete_quotient (can S X b))),
-    -- have hb : b = nb.app imb,
-    -- { sorry,
-    -- },
-    -- rw hb,
-
-  },
+  { refine can_is_injective _ _ _,
+    intros i,
+    rw Top.epi_iff_surjective _,
+    refine quotient_map.surjective _,
+    sorry, },
   { intros f,
-    let a := limits.colimit.ι (Colim_diagram S X) (opposite.op (im_as_discrete_quotient f)),
+    let a := colimit.ι ((S.diagram ⋙ Profinite.to_Top).op ⋙ yoneda.obj X ⋙ ulift_functor) (opposite.op (im_as_discrete_quotient ((to_Top_iso_limit S).hom ≫ f.down))),
     fconstructor,
-    exact a.app (incl_im' f),
-    ext,
-    unfold can,
-    tidy,
-  },
+    { exact a.app (ulift_functor.map (incl_im ((to_Top_iso_limit S).hom ≫ f.down))) },
+    { ext,
+      unfold can,
+      tidy } },
 end
 
 -- lemma discreteness_condition_sufficient (S : Profinite.{u}) (X : CondensedSet.{u})
