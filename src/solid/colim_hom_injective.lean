@@ -46,6 +46,18 @@ def can_map_from_colim_of_homs_to_hom_from_limit :
   ((yoneda.obj Y).obj (opposite.op (limit S))) :=
   colimit.desc (S.op ⋙ yoneda.obj Y ⋙ ulift_functor) (hom_as_cone Y S)
 
+lemma can_eq_left_comp_with_proj' {i : I}
+  (x : (S.op ⋙ yoneda.obj Y ⋙ ulift_functor).obj (opposite.op i)) :
+  (limit.π S i) ≫ x.down  =
+  (can_map_from_colim_of_homs_to_hom_from_limit Y S
+    (colimit.ι (S.op ⋙ yoneda.obj Y ⋙ ulift_functor) (opposite.op i) x)).down :=
+begin
+  unfold can_map_from_colim_of_homs_to_hom_from_limit,
+  cases x,
+  simp only [category_theory.limits.types.colimit.ι_desc_apply],
+  refl,
+end
+
 lemma can_eq_left_comp_with_proj {i : Iᵒᵖ}
   (x : (S.op ⋙ yoneda.obj Y ⋙ ulift_functor).obj i) :
   (limit.π S i.unop) ≫ x.down  =
