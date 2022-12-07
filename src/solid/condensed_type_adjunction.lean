@@ -280,3 +280,21 @@ def Top_ulift_to_Condensed_obj' (T : Top.{u+1}) : CondensedSet.{u} :=
         apply Profinite.π_descend_to_Top,
     } }
   end }
+
+@[simps]
+def Top_ulift_to_Condensed : Top.{u+1} ⥤ CondensedSet.{u} :=
+{ obj := λ X, Top_ulift_to_Condensed_obj' X,
+  map := λ X Y f, ⟨whisker_left _ $ whisker_left _ $ whisker_right (yoneda.map f) _⟩,
+  map_id' := begin
+    intros X,
+    ext1,
+    dsimp,
+    erw [yoneda.map_id, whisker_right_id, whisker_left_id],
+    refl,
+  end,
+  map_comp' := begin
+    intros X Y Z f g,
+    ext1,
+    dsimp,
+    erw [yoneda.map_comp, whisker_right_comp, whisker_left_comp],
+  end }
