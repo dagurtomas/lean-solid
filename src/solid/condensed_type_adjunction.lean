@@ -1,6 +1,6 @@
 import condensed.top_comparison
 import solid.discrete
-import category_theory.adjunction.adjoint_functor_theorems
+import category_theory.adjunction.basic
 
 open category_theory
 open category_theory.adjunction
@@ -200,7 +200,8 @@ end
 instance Profinite_ulift_to_Top_full : full (Profinite_ulift.{u} ⋙ to_Top.{u+1}) :=
   full.comp Profinite_ulift to_Top
 
-def Top_ulift_to_Condensed_obj' (T : Top.{u+1}) : CondensedSet.{u} :=
+-- Version of Top.to_Condensed without the universe bump. Proof just needs slight modifications.
+def Top_ulift_to_Condensed_obj (T : Top.{u+1}) : CondensedSet.{u} :=
 { val := Profinite_ulift.{u}.op ⋙ Profinite.to_Top.op ⋙ yoneda'.{u+1}.obj T,
   cond := begin
     rw is_sheaf_iff_is_sheaf_of_type,
@@ -283,7 +284,7 @@ def Top_ulift_to_Condensed_obj' (T : Top.{u+1}) : CondensedSet.{u} :=
 
 @[simps]
 def Top_ulift_to_Condensed : Top.{u+1} ⥤ CondensedSet.{u} :=
-{ obj := λ X, Top_ulift_to_Condensed_obj' X,
+{ obj := λ X, Top_ulift_to_Condensed_obj X,
   map := λ X Y f, ⟨whisker_left _ $ whisker_left _ $ whisker_right (yoneda.map f) _⟩,
   map_id' := begin
     intros X,
@@ -298,3 +299,59 @@ def Top_ulift_to_Condensed : Top.{u+1} ⥤ CondensedSet.{u} :=
     dsimp,
     erw [yoneda.map_comp, whisker_right_comp, whisker_left_comp],
   end }
+
+def is_compactly_generated_Top (X : Top.{u+1}) : Prop :=
+  X.topological_space = ⨆ (S : CompHaus.{u}) (f : (Top_ulift.obj S.to_Top) ⟶ X),
+  topological_space.coinduced f (Top_ulift.obj S.to_Top).topological_space
+
+def CG := full_subcategory is_compactly_generated_Top
+
+instance : category CG := full_subcategory.category _
+
+def CG_to_Condensed : CG.{u} ⥤ CondensedSet.{u} :=
+  (full_subcategory_inclusion is_compactly_generated_Top) ⋙ Top_ulift_to_Condensed
+
+def Type_to_Condensed : Type (u+1) ⥤ CondensedSet.{u} :=
+  Top.discrete ⋙ Top_ulift_to_Condensed
+
+def Condensed_to_Type : CondensedSet.{u} ⥤ Type (u+1) := CondensedSet.evaluation point
+
+instance : faithful Top_ulift_to_Condensed := sorry
+instance : faithful CG_to_Condensed := sorry
+instance : full CG_to_Condensed := sorry
+instance : full Type_to_Condensed := sorry
+instance : faithful Type_to_Condensed := sorry
+
+def evaluate_at_point_equiv_of_condensed (Y : CondensedSet.{u}) :
+  Y.val.obj (opposite.op point) ≃ Condensed_to_Type.obj Y := by refl
+
+def evaluate_at_point_equiv_of_type (X : Type (u+1)) :
+  (Type_to_Condensed.obj X).val.obj (opposite.op point) ≃ X :=
+{ to_fun := λ f, f.down.to_fun ⟨punit.star⟩,
+  inv_fun := λ x, ⟨⟨λ f, x⟩⟩,
+  left_inv := by tidy,
+  right_inv := by tidy, }
+
+def Condensed_Type_hom_equiv : core_hom_equiv Type_to_Condensed Condensed_to_Type :=
+{ hom_equiv := λ X T,
+  { to_fun := λ f, (evaluate_at_point_equiv_of_type X).inv_fun ≫ (f.val.app $ opposite.op point) ≫
+      (evaluate_at_point_equiv_of_condensed T).to_fun,
+    inv_fun := sorry,
+    left_inv := sorry,
+    right_inv := sorry, },
+  hom_equiv_naturality_left_symm' := sorry,
+  hom_equiv_naturality_right' := sorry, }
+
+def Condensed_Type_adjunction : Type_to_Condensed ⊣ Condensed_to_Type :=
+  mk_of_hom_equiv Condensed_Type_hom_equiv
+
+instance glob_sec_preserves_limits :
+  limits.preserves_limits (CondensedSet.evaluation point) := by apply_instance
+
+instance : limits.preserves_limits Condensed_to_Type := glob_sec_preserves_limits
+
+def is_discrete (X: CondensedSet.{u}) : Prop :=
+  ∃ (Y : Type (u+1)) (h : (Type_to_Condensed.obj Y) ⟶ X), is_iso h
+
+def is_discrete_stronger (X : CondensedSet.{u}) : Prop :=
+  is_iso ((counit Condensed_Type_adjunction).app X)
