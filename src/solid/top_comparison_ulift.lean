@@ -1,4 +1,6 @@
+import category_theory.limits.presheaf
 import condensed.top_comparison
+import condensed.adjunctions
 import solid.discrete
 import solid.Profinite_ulift
 
@@ -114,6 +116,80 @@ def Type_to_Condensed : Type (u+1) ⥤ CondensedSet.{u} :=
   Top.discrete ⋙ Top_ulift_to_Condensed
 
 def Condensed_to_Type : CondensedSet.{u} ⥤ Type (u+1) := CondensedSet.evaluation point
+
+-- set_option pp.universes true
+-- variables (C : Type (u+1)) [category C]
+-- variables (X Y : C)
+
+-- #check X
+-- #check X ⟶ Y
+
+variables (X Y : Type u) [topological_space X] [topological_space Y]
+
+#check C(X,Y)
+
+-- #check Top.{u}
+-- #check X.α
+-- #check X ⟶ Y
+-- #check @yoneda
+-- #check (Profinite_ulift.{u} ⋙ to_Top.{u+1})
+-- #check Top.{u+1}
+-- #check Profinite.{u}
+-- #check colimit_adj.restricted_yoneda.{u+1 u+2} (Profinite_ulift.{u} ⋙ to_Top.{u+1})
+
+-- instance : small_category Profinite.{u} :=
+-- begin
+--   sorry,
+-- end
+
+-- instance : category.{u+1} Top.{u+1} := by apply_instance
+
+def Profinite_to_presheaf : Profinite.{u} ⥤ Profinite.{u}ᵒᵖ ⥤ Type u := @yoneda Profinite.{u} _
+
+-- def Type_to_Presheaf : Type u ⥤ Profinite.{u}ᵒᵖ ⥤ Type (u+1) :=
+--   Top.discrete.{u} ⋙ colimit_adj.restricted_yoneda (Profinite_ulift.{u} ⋙ to_Top)
+
+
+def Type_to_presheaf : Type (u+1) ⥤ Profinite.{u}ᵒᵖ ⥤ Type (u+1) :=
+  Top.discrete.{u+1} ⋙ yoneda ⋙ (whiskering_left _ _ (Type (u+1))).obj
+  (functor.op (Profinite_ulift.{u} ⋙ to_Top))
+
+lemma Type_to_presheaf_is_continuous_maps (X : Type (u+1)) [topological_space X]
+  [discrete_topology X] (S : Profinite.{u}) :
+  (Type_to_presheaf.obj X).obj (op S) = C(S,X) :=
+begin
+  unfold Type_to_presheaf,
+  simp only [category_theory.yoneda_obj_obj,
+    Profinite.to_Top_obj,
+    category_theory.whiskering_left_obj_obj,
+    opposite.unop_op,
+    category_theory.functor.comp_obj,
+    category_theory.functor.op_obj],
+  unfold Profinite_ulift,
+  dsimp,
+
+  -- unfold C(S,X)
+  -- dsimp,
+  -- simp,
+end
+
+
+#exit
+
+instance small_category_ulift (C : Type (u+1)) [large_category C] : small_category.{u+1} C :=
+{ hom := λ A B, ulift.{u+1} $ A ⟶ B,
+  id := λ A, ⟨𝟙 _⟩,
+  comp := λ A B C f g, ⟨f.down ≫ g.down⟩, }
+
+instance : small_category.{u+1} (Type u) := by apply_instance
+instance : small_category.{u+1} Profinite.{u} := by apply_instance
+instance : small_category.{u+1} Top.{u} := by apply_instance
+instance : category.{u} Profinite.{u} := by apply_instance
+
+-- (colimit_adj.restricted_yoneda.{u+1 u+1} (Profinite_ulift.{u} ⋙ to_Top))
+
+lemma Type_to_Condensed_eq_Type_to_Presheaf_sheafified :
+  Type_to_Condensed = Type_to_Presheaf ⋙ presheaf_to_CondensedSet := sorry
 
 instance : faithful Top_ulift_to_Condensed := sorry
 instance : full Type_to_Condensed := sorry

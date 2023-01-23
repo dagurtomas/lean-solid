@@ -23,6 +23,36 @@ def evaluate_at_point_equiv_of_type (X : Type (u+1)) :
   left_inv := by tidy,
   right_inv := by tidy, } .
 
+def Prof_ulift_to_Condensed : Profinite.{u+1} ⥤ CondensedSet.{u} :=
+  to_Top ⋙ Top_ulift_to_Condensed
+
+def counit_functor : CondensedSet.{u} ⥤ CondensedSet.{u} :=
+  Condensed_to_Type ⋙ Type_to_Condensed
+
+instance (X : CondensedSet.{u}) : limits.has_colimits_of_shape
+  ((costructured_arrow Prof_ulift_to_Condensed X)) CondensedSet.{u} :=
+begin
+  sorry,
+  -- haveI : limits.has_limits_of_shape (ulift_hom.{u+1} (ulift.{(u+1) (u+1)}
+  --   (structured_arrow X Fintype.to_Profinite.{u}))) (Condensed.{u} Ab.{u+1}) := by apply_instance,
+  -- haveI : limits.has_limits_of_shape (ulift_hom.{u+1} (structured_arrow X Fintype.to_Profinite.{u}))
+  --   (Condensed.{u} Ab.{u+1}) := by apply_instance,
+  -- haveI h2 : (ulift_hom.{u+1} (structured_arrow X Fintype.to_Profinite.{u})) ≌
+  --   (structured_arrow X Fintype.to_Profinite.{u}) := ulift_hom.equiv.symm,
+  -- apply limits.has_limits_of_shape_of_equivalence h2,
+  -- apply_instance,
+end
+
+def counit_functor_is_Lan : counit_functor ≅
+  (Lan Prof_ulift_to_Condensed).obj (Prof_ulift_to_Condensed ⋙ counit_functor) := sorry
+
+def Condensed_Type_adjunction : Type_to_Condensed.{u} ⊣ Condensed_to_Type.{u} :=
+  mk_of_unit_counit
+  { unit := { app := λ X, (λ x, ⟨⟨λ f, x⟩⟩), },
+    counit := { app := λ X, sorry, }, }
+
+#exit
+
 def Condensed_Type_hom_equiv : core_hom_equiv Type_to_Condensed Condensed_to_Type :=
 { hom_equiv := λ X T,
   { to_fun := λ f, (evaluate_at_point_equiv_of_type X).inv_fun ≫ (f.val.app $ opposite.op point) ≫
