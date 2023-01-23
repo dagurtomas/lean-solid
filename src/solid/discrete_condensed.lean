@@ -75,3 +75,22 @@ mk_of_unit_counit
 
 def Condensed_Type_adjunction : Type_to_Condensed.{u} ⊣ Condensed_to_Type.{u} :=
 comp presheaf_Type_adjunction CondensedSet_presheaf_adjunction
+
+instance : is_iso presheaf_Type_adjunction.unit :=
+is_iso.of_iso (category_theory.functor.const_comp_evaluation_obj _ point)
+
+instance unit_iso : is_iso Condensed_Type_adjunction.{u}.unit :=
+begin
+  unfold Condensed_Type_adjunction,
+  unfold comp,
+  dsimp,
+  unfold presheaf_Type_adjunction,
+  unfold CondensedSet_presheaf_adjunction,
+  dsimp,
+  unfold sheafification_adjunction,
+  dsimp,
+  sorry,
+end
+
+instance : full Type_to_Condensed := L_full_of_unit_is_iso Condensed_Type_adjunction
+instance : faithful Type_to_Condensed := L_faithful_of_unit_is_iso Condensed_Type_adjunction
