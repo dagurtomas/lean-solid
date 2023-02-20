@@ -12,6 +12,36 @@ universes v u u'
 variables {C : Type u} [category.{v} C] (F : Fintype.{v}ᵒᵖ ⥤ C)
 variables {D : Type u'} [category.{v} D]
 
+-- -- /-- Change a cocone with respect to a morphism from `Profinite`. -/
+-- -- @[simps]
+-- -- def change_cocone {X Y : Profinite} (f : X ⟶ Y) (c : cocone (X.fintype_diagram.op ⋙ F)) :
+-- --   cocone (Y.fintype_diagram.op ⋙ F) :=
+-- -- cocone_of_cone_right_op (change_cone F.right_op f (cone_of_cocone_left_op c))
+
+-- -- -- Assume that C has enough colimits.
+-- -- variable [∀ X : Profinite, has_colimit (X.fintype_diagram.op ⋙ F)]
+
+-- -- Assume that C has enough limits.
+-- variable [∀ X : Profinite, has_limit (X.fintype_diagram ⋙ F.right_op)]
+
+-- -- PROJECT: Prove that this is isomorphic to the left Kan extension along `Fintype.to_Profinite.op`.
+-- /-- Extend a functor `Fintypeᵒᵖ ⥤ C` to `Profiniteᵒᵖ`. -/
+-- @[simps]
+-- def coextend : Profiniteᵒᵖ ⥤ C := (extend F.right_op).left_op
+
+-- def coextend_comp_op : Fintype.to_Profinite.op ⋙ coextend F ≅
+--   (Fintype.to_Profinite ⋙ extend F.right_op).left_op :=
+-- { hom := begin unfold coextend, dsimp, end,
+--   inv := sorry, }
+
+-- /-- The coextension of `F : Fintypeᵒᵖ ⥤ C` extends `F`. -/
+-- @[simps]
+-- def coextend_extends : Fintype.to_Profinite.op ⋙ coextend F ≅ F :=
+-- { hom := (extend_extends F.right_op).inv.left_op,
+--   inv := (extend_extends F.right_op).hom.left_op, }
+
+-- end Profinite
+
 def map_for_ι {X Y : Profinite} (f : X ⟶ Y) (S : (discrete_quotient Y)ᵒᵖ) :
   X.fintype_diagram.obj (S.unop.comap f.continuous) ⟶ Y.fintype_diagram.obj S.unop :=
 discrete_quotient.map $ le_refl $ S.unop.comap f.continuous
