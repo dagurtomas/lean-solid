@@ -81,6 +81,20 @@ begin
   exact proj_bot_injective h,
 end
 
+lemma dq_map_surj_of_fhom_surj (f : structured_arrow S to_Profinite)
+  (hf : function.surjective f.hom) :
+  function.surjective (map (le_refl (comap ⊥ f.hom.continuous))) :=
+begin
+  intros a,
+  obtain ⟨x, hxa⟩ := proj_surjective _ a,
+  obtain ⟨y, hyx⟩ := hf x,
+  rw ← hxa,
+  dsimp at *,
+  use (comap ⊥ f.hom.continuous).proj y,
+  simp only [discrete_quotient.map_proj_apply],
+  rw ← hyx,
+end
+
 def proj_bot_inv (f : structured_arrow S to_Profinite) :=
 (function.surj_inv (proj_bot_bijective.2 : function.surjective
   (⊥ : discrete_quotient f.right).proj))
@@ -98,13 +112,15 @@ instance nonempty_hom_to_dq (f : structured_arrow S to_Profinite) [nonempty S] :
 def right_to_hom_to_dq (f : structured_arrow S to_Profinite) [nonempty S] :
   f.right → hom_to_dq f.hom := function.inv_fun (hom_to_dq_to_right f)
 
-lemma bot_proj_inv_injective (f : structured_arrow S to_Profinite)
-  [nonempty S] : function.injective (proj_bot_inv f) :=
-function.injective_surj_inv _
-
 lemma inj_hom_to_dq_to_right (f : structured_arrow S to_Profinite) :
   function.injective (hom_to_dq_to_right f) :=
 function.injective.comp (function.injective_surj_inv _) (dq_map_injective f)
+
+lemma surj_hom_to_dq_to_right_of_fhom_surj (f : structured_arrow S to_Profinite)
+  (hf : function.surjective f.hom) :
+  function.surjective (hom_to_dq_to_right f) :=
+function.surjective.comp (function.left_inverse.surjective (function.left_inverse_surj_inv
+  proj_bot_bijective)) (dq_map_surj_of_fhom_surj f hf)
 
 def fintype_map_of_sa_to_dq_le {f g : structured_arrow S to_Profinite}
   (h : hom_to_dq f.hom ≤ hom_to_dq g.hom) [nonempty S] : f.right → g.right :=
@@ -119,6 +135,15 @@ begin
   ext,
   dsimp,
   exact function.left_inverse_surj_inv proj_bot_bijective _,
+end
+
+lemma fhom_eq_proj_apply (f : structured_arrow S to_Profinite) :
+  ∀ x, hom_to_dq_to_right f ((hom_to_dq f.hom).proj x) = f.hom x :=
+begin
+  intros x,
+  change (hom_to_dq_to_right f ((hom_to_dq f.hom).proj x)) with
+    ((hom_to_dq_to_right f) ∘ (hom_to_dq f.hom).proj) x,
+  rw fhom_eq_proj,
 end
 
 lemma inv_comps_apply (f : structured_arrow S to_Profinite)
@@ -161,7 +186,8 @@ def sa_dq_functor :
   structured_arrow S to_Profinite ⥤ discrete_quotient S :=
 { obj := λ f, hom_to_dq f.hom,
   map := λ f g φ, hom_of_le $ sa_to_dq_le φ, }
-def unit_iso_dq_sa (S : Profinite.{u}) :
+
+def unit_iso_dq_sa :
   𝟭 (discrete_quotient S) ≅ (dq_sa_functor S) ⋙ (sa_dq_functor S) :=
 { hom := { app := λ Si, eq_to_hom (htdq_comp_dqth_eq_id Si), },
   inv := { app := λ Si, eq_to_hom (htdq_comp_dqth_eq_id Si).symm, }, }
@@ -218,3 +244,13 @@ instance sa_dq_initial [nonempty S] : (sa_dq_functor S).initial :=
     use f,
     exact ⟨(by tauto), hf⟩,
   end)  }
+
+instance inh_cadqsa (f : structured_arrow S to_Profinite) :
+  inhabited (costructured_arrow (dq_sa_functor S) f) :=
+{ default := sorry, /- costructured_arrow.mk (structured_arrow.hom_mk' something) -/ }
+
+instance dq_sa_initial [nonempty S] : (dq_sa_functor S).initial :=
+{ out := λ f, zigzag_is_connected (λ p q,
+  begin
+    sorry,
+  end) }
