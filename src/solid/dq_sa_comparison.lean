@@ -245,12 +245,62 @@ instance sa_dq_initial [nonempty S] : (sa_dq_functor S).initial :=
     exact ⟨(by tauto), hf⟩,
   end)  }
 
-instance inh_cadqsa (f : structured_arrow S to_Profinite) :
-  inhabited (costructured_arrow (dq_sa_functor S) f) :=
-{ default := sorry, /- costructured_arrow.mk (structured_arrow.hom_mk' something) -/ }
+lemma le_self_sa (f : structured_arrow S to_Profinite) :
+  hom_to_dq ((dq_sa_functor S).obj ((sa_dq_functor S).obj f)).hom ≤ hom_to_dq f.hom :=
+begin
+  dsimp [sa_dq_functor, dq_sa_functor],
+  rw ← htdq_comp_dqth_eq_id _,
+  exact le_refl _,
+end
 
-instance dq_sa_initial [nonempty S] : (dq_sa_functor S).initial :=
-{ out := λ f, zigzag_is_connected (λ p q,
+def counit_sa_dq [nonempty S] : sa_dq_functor S ⋙ dq_sa_functor S ⟶ 𝟭 _ :=
+{ app := λ f, hom_of_sa_to_dq_le (le_self_sa S f),
+  naturality' :=
   begin
-    sorry,
-  end) }
+    intros f g p,
+    let f' := (dq_sa_functor S).obj ((sa_dq_functor S).obj f),
+    let g' := (dq_sa_functor S).obj ((sa_dq_functor S).obj g),
+    let p' : f' ⟶ g' := (dq_sa_functor S).map ((sa_dq_functor S).map p),
+    ext,
+    have hf : function.surjective f'.hom := (discrete_quotient.proj_surjective _),
+    have hg : function.surjective g'.hom := (discrete_quotient.proj_surjective _),
+    obtain ⟨w, hw⟩ := surj_hom_to_dq_to_right_of_fhom_surj _ hf x,
+    have h₂ : (right_to_hom_to_dq _) (hom_to_dq_to_right _ w) = w,
+    { unfold right_to_hom_to_dq,
+      exact function.left_inverse_inv_fun (inj_hom_to_dq_to_right _) w },
+    obtain ⟨x', hx'⟩ := hf x,
+    obtain ⟨w', hw'⟩ := discrete_quotient.proj_surjective _ w,
+    dsimp,
+    change (dq_sa_functor S).map ((sa_dq_functor S).map p) with p',
+    change (dq_sa_functor S).obj ((sa_dq_functor S).obj g) with g',
+    change (dq_sa_functor S).obj ((sa_dq_functor S).obj f) with f',
+    dsimp [hom_of_sa_to_dq_le],
+    dsimp [fintype_map_of_sa_to_dq_le],
+    rw ← hw,
+    rw h₂,
+    rw ← hw',
+    simp only [discrete_quotient.of_le_proj_apply],
+    rw fhom_eq_proj_apply f w',
+    rw fhom_eq_proj_apply f' w',
+    cases p,
+    dsimp [auto_param_eq] at p_w',
+    simp only [category_theory.category.id_comp] at p_w',
+    simp only [Fintype.to_Profinite_map_apply, Profinite.coe_comp, function.comp_app],
+    have : p'.right (f'.hom w') = g'.hom w',
+    { have h := p'.w',
+      dsimp [auto_param_eq] at h,
+      simp only [category_theory.category.id_comp] at h,
+      rw h,
+      refl },
+    rw this,
+    rw ← fhom_eq_proj_apply g' w',
+    have h₁ : (right_to_hom_to_dq _) (hom_to_dq_to_right _ ((hom_to_dq g'.hom).proj w')) =
+      (hom_to_dq g'.hom).proj w',
+    { unfold right_to_hom_to_dq,
+      exact function.left_inverse_inv_fun (inj_hom_to_dq_to_right _) _ },
+    rw h₁,
+    simp only [discrete_quotient.of_le_proj_apply],
+    rw fhom_eq_proj_apply g w',
+    rw p_w',
+    refl,
+  end, }
