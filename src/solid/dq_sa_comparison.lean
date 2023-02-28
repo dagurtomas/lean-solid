@@ -116,6 +116,14 @@ lemma inj_hom_to_dq_to_right (f : structured_arrow S to_Profinite) :
   function.injective (hom_to_dq_to_right f) :=
 function.injective.comp (function.injective_surj_inv _) (dq_map_injective f)
 
+lemma right_hom_left_inv_apply {f : structured_arrow S to_Profinite} [nonempty S] :
+  ∀ x, (right_to_hom_to_dq f) (hom_to_dq_to_right f x) = x :=
+begin
+  intro x,
+  unfold right_to_hom_to_dq,
+  exact function.left_inverse_inv_fun (inj_hom_to_dq_to_right _) x
+end
+
 lemma surj_hom_to_dq_to_right_of_fhom_surj (f : structured_arrow S to_Profinite)
   (hf : function.surjective f.hom) :
   function.surjective (hom_to_dq_to_right f) :=
@@ -265,9 +273,6 @@ def counit_sa_dq [nonempty S] : sa_dq_functor S ⋙ dq_sa_functor S ⟶ 𝟭 _ :
     have hf : function.surjective f'.hom := (discrete_quotient.proj_surjective _),
     have hg : function.surjective g'.hom := (discrete_quotient.proj_surjective _),
     obtain ⟨w, hw⟩ := surj_hom_to_dq_to_right_of_fhom_surj _ hf x,
-    have h₂ : (right_to_hom_to_dq _) (hom_to_dq_to_right _ w) = w,
-    { unfold right_to_hom_to_dq,
-      exact function.left_inverse_inv_fun (inj_hom_to_dq_to_right _) w },
     obtain ⟨x', hx'⟩ := hf x,
     obtain ⟨w', hw'⟩ := discrete_quotient.proj_surjective _ w,
     dsimp,
@@ -277,7 +282,7 @@ def counit_sa_dq [nonempty S] : sa_dq_functor S ⋙ dq_sa_functor S ⟶ 𝟭 _ :
     dsimp [hom_of_sa_to_dq_le],
     dsimp [fintype_map_of_sa_to_dq_le],
     rw ← hw,
-    rw h₂,
+    rw right_hom_left_inv_apply w,
     rw ← hw',
     simp only [discrete_quotient.of_le_proj_apply],
     rw fhom_eq_proj_apply f w',
@@ -294,13 +299,95 @@ def counit_sa_dq [nonempty S] : sa_dq_functor S ⋙ dq_sa_functor S ⟶ 𝟭 _ :
       refl },
     rw this,
     rw ← fhom_eq_proj_apply g' w',
-    have h₁ : (right_to_hom_to_dq _) (hom_to_dq_to_right _ ((hom_to_dq g'.hom).proj w')) =
-      (hom_to_dq g'.hom).proj w',
-    { unfold right_to_hom_to_dq,
-      exact function.left_inverse_inv_fun (inj_hom_to_dq_to_right _) _ },
-    rw h₁,
+    rw right_hom_left_inv_apply ((hom_to_dq g'.hom).proj w'),
     simp only [discrete_quotient.of_le_proj_apply],
     rw fhom_eq_proj_apply g w',
     rw p_w',
     refl,
   end, }
+
+lemma at_most_one_map_from_dq {Si : discrete_quotient S} {f : structured_arrow S to_Profinite}
+  (p q : (dq_sa_functor S).obj Si ⟶ f) : p = q :=
+begin
+  ext,
+  have hf : function.surjective ((dq_sa_functor S).obj Si).hom :=
+      (discrete_quotient.proj_surjective _),
+  obtain ⟨x', hx⟩ := hf x,
+  rw ← hx,
+  have hp : p.right (((dq_sa_functor S).obj Si).hom x') = f.hom x',
+  { cases p,
+    dsimp at *,
+    simp only [category_theory.category.id_comp] at p_w',
+    rw p_w',
+    refl, },
+  have hq : q.right (((dq_sa_functor S).obj Si).hom x') = f.hom x',
+  { cases q,
+    dsimp at *,
+    simp only [category_theory.category.id_comp] at q_w',
+    rw q_w',
+    refl, },
+  rw [hp, hq],
+end
+
+lemma at_most_one_map_from_dq_apply {Si : discrete_quotient S} {f : structured_arrow S to_Profinite}
+  {p q : (dq_sa_functor S).obj Si ⟶ f} : ∀ x, p.right x = q.right x :=
+begin
+  intro x,
+  rw at_most_one_map_from_dq S p q,
+end
+
+lemma htdq_comp_dqth_eq_id_functors (Si : discrete_quotient S) :
+  Si = (sa_dq_functor S).obj ((dq_sa_functor S).obj Si) :=
+begin
+  dsimp [sa_dq_functor, dq_sa_functor],
+  exact htdq_comp_dqth_eq_id _,
+end
+
+def dq_sa_adjunction [nonempty S] : dq_sa_functor S ⊣ sa_dq_functor S :=
+adjunction.mk_of_unit_counit
+{ unit := (unit_iso_dq_sa S).hom,
+  counit := counit_sa_dq S,
+  left_triangle' :=
+  begin
+    ext,
+    exact at_most_one_map_from_dq_apply _ _,
+  end,
+  right_triangle' := by refl,
+}
+
+instance inh_cadqsa (f : structured_arrow S to_Profinite) [nonempty S] :
+  inhabited (costructured_arrow (dq_sa_functor S) f) :=
+{ default := costructured_arrow.mk (hom_of_sa_to_dq_le (le_self_sa S f)) }
+
+instance dq_sa_initial [nonempty S] : (dq_sa_functor S).initial :=
+{ out := λ f, zigzag_is_connected (λ p q,
+  begin
+    haveI : is_cofiltered (discrete_quotient S) := by fsplit,
+    obtain ⟨Sk, φ, ψ, t⟩ := _inst.cocone_objs p.left q.left,
+    let phom' := (dq_sa_functor S).map ((eq_to_hom (htdq_comp_dqth_eq_id_functors S p.left)) ≫
+    ((sa_dq_functor S).map p.hom)) ≫ hom_of_sa_to_dq_le (le_self_sa S f),
+    dsimp at phom',
+    have hp : phom' = p.hom := at_most_one_map_from_dq _ _ _,
+    let qhom' := (dq_sa_functor S).map ((eq_to_hom (htdq_comp_dqth_eq_id_functors S q.left)) ≫
+    ((sa_dq_functor S).map q.hom)) ≫ hom_of_sa_to_dq_le (le_self_sa S f),
+    dsimp at qhom',
+    have hq : qhom' = q.hom := at_most_one_map_from_dq _ _ _,
+    let dsf := costructured_arrow.mk (hom_of_sa_to_dq_le (le_self_sa S f)),
+    let phom'' : p.left ⟶ dsf.left  := (eq_to_hom (htdq_comp_dqth_eq_id_functors S p.left)) ≫
+    ((sa_dq_functor S).map p.hom),
+    let pf := costructured_arrow.hom_mk phom'' hp,
+    let qhom'' : q.left ⟶ dsf.left  := (eq_to_hom (htdq_comp_dqth_eq_id_functors S q.left)) ≫
+    ((sa_dq_functor S).map q.hom),
+    let qf := costructured_arrow.hom_mk qhom'' hq,
+    have hp' : zag p dsf := by { left, use pf, },
+    have hq' : zag dsf q := by { right, use qf, },
+    unfold zigzag,
+    rw relation.refl_trans_gen.cases_tail_iff zag p q,
+    right,
+    use dsf,
+    refine ⟨_, hq'⟩,
+    rw relation.refl_trans_gen.cases_tail_iff zag p dsf,
+    right,
+    use p,
+    exact ⟨(by tauto), hp'⟩,
+  end) }

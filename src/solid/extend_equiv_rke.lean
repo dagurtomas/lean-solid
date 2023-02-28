@@ -72,7 +72,6 @@ def functors_extend_rke_iso_aux :
   dq_sa_functor S ⋙ structured_arrow.proj S to_Profinite :=
 as_iso (whisker_left (dq_sa_functor S) (functors_extend_rke_nat_trans S))
 
-
 def functors_extend_rke_iso :
   Ran.diagram to_Profinite F S ≅ sa_dq_functor S ⋙ S.fintype_diagram ⋙ F := sorry
 
