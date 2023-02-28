@@ -223,36 +223,6 @@ functor.full_of_surjective (sa_dq_functor S) $ λ f g, begin
   exact hom_eq_dq _ _,
 end
 
-instance sa_dq_initial [nonempty S] : (sa_dq_functor S).initial :=
-{ out := λ Si, zigzag_is_connected (λ f g,
-  begin
-    let h := functor.ess_image.get_iso ((es_sadq S).mem_ess_image Si),
-    let sc := costructured_arrow.mk h.hom,
-    let fc := costructured_arrow.hom_mk ((full.preimage (f.hom ≫ h.inv)) : f.left ⟶ sc.left)
-      (by simp only [category_theory.category.comp_id,
-        category_theory.iso.inv_hom_id,
-        category_theory.costructured_arrow.mk_hom_eq_self,
-        category_theory.category.assoc,
-        category_theory.full.witness]),
-    let gc := costructured_arrow.hom_mk ((full.preimage (g.hom ≫ h.inv)) : g.left ⟶ sc.left)
-      (by simp only [category_theory.category.comp_id,
-        category_theory.iso.inv_hom_id,
-        category_theory.costructured_arrow.mk_hom_eq_self,
-        category_theory.category.assoc,
-        category_theory.full.witness]),
-    have hf : zag f sc := by { left, use fc, },
-    have hg : zag sc g := by { right, use gc, },
-    unfold zigzag,
-    rw relation.refl_trans_gen.cases_tail_iff zag f g,
-    right,
-    use sc,
-    refine ⟨_, hg⟩,
-    rw relation.refl_trans_gen.cases_tail_iff zag f sc,
-    right,
-    use f,
-    exact ⟨(by tauto), hf⟩,
-  end)  }
-
 lemma le_self_sa (f : structured_arrow S to_Profinite) :
   hom_to_dq ((dq_sa_functor S).obj ((sa_dq_functor S).obj f)).hom ≤ hom_to_dq f.hom :=
 begin
@@ -355,39 +325,35 @@ adjunction.mk_of_unit_counit
   right_triangle' := by refl,
 }
 
-instance inh_cadqsa (f : structured_arrow S to_Profinite) [nonempty S] :
-  inhabited (costructured_arrow (dq_sa_functor S) f) :=
-{ default := costructured_arrow.mk (hom_of_sa_to_dq_le (le_self_sa S f)) }
+instance sa_dq_initial [nonempty S] : (sa_dq_functor S).initial :=
+{ out := λ Si, zigzag_is_connected (λ f g,
+  begin
+    let h := functor.ess_image.get_iso ((es_sadq S).mem_ess_image Si),
+    let sc := costructured_arrow.mk h.hom,
+    let fc := costructured_arrow.hom_mk ((full.preimage (f.hom ≫ h.inv)) : f.left ⟶ sc.left)
+      (by simp only [category_theory.category.comp_id,
+        category_theory.iso.inv_hom_id,
+        category_theory.costructured_arrow.mk_hom_eq_self,
+        category_theory.category.assoc,
+        category_theory.full.witness]),
+    let gc := costructured_arrow.hom_mk ((full.preimage (g.hom ≫ h.inv)) : g.left ⟶ sc.left)
+      (by simp only [category_theory.category.comp_id,
+        category_theory.iso.inv_hom_id,
+        category_theory.costructured_arrow.mk_hom_eq_self,
+        category_theory.category.assoc,
+        category_theory.full.witness]),
+    have hf : zag f sc := by { left, use fc, },
+    have hg : zag sc g := by { right, use gc, },
+    unfold zigzag,
+    rw relation.refl_trans_gen.cases_tail_iff zag f g,
+    right,
+    use sc,
+    refine ⟨_, hg⟩,
+    rw relation.refl_trans_gen.cases_tail_iff zag f sc,
+    right,
+    use f,
+    exact ⟨(by tauto), hf⟩,
+  end)  }
 
 instance dq_sa_initial [nonempty S] : (dq_sa_functor S).initial :=
-{ out := λ f, zigzag_is_connected (λ p q,
-  begin
-    haveI : is_cofiltered (discrete_quotient S) := by fsplit,
-    obtain ⟨Sk, φ, ψ, t⟩ := _inst.cocone_objs p.left q.left,
-    let phom' := (dq_sa_functor S).map ((eq_to_hom (htdq_comp_dqth_eq_id_functors S p.left)) ≫
-    ((sa_dq_functor S).map p.hom)) ≫ hom_of_sa_to_dq_le (le_self_sa S f),
-    dsimp at phom',
-    have hp : phom' = p.hom := at_most_one_map_from_dq _ _ _,
-    let qhom' := (dq_sa_functor S).map ((eq_to_hom (htdq_comp_dqth_eq_id_functors S q.left)) ≫
-    ((sa_dq_functor S).map q.hom)) ≫ hom_of_sa_to_dq_le (le_self_sa S f),
-    dsimp at qhom',
-    have hq : qhom' = q.hom := at_most_one_map_from_dq _ _ _,
-    let dsf := costructured_arrow.mk (hom_of_sa_to_dq_le (le_self_sa S f)),
-    let phom'' : p.left ⟶ dsf.left  := (eq_to_hom (htdq_comp_dqth_eq_id_functors S p.left)) ≫
-    ((sa_dq_functor S).map p.hom),
-    let pf := costructured_arrow.hom_mk phom'' hp,
-    let qhom'' : q.left ⟶ dsf.left  := (eq_to_hom (htdq_comp_dqth_eq_id_functors S q.left)) ≫
-    ((sa_dq_functor S).map q.hom),
-    let qf := costructured_arrow.hom_mk qhom'' hq,
-    have hp' : zag p dsf := by { left, use pf, },
-    have hq' : zag dsf q := by { right, use qf, },
-    unfold zigzag,
-    rw relation.refl_trans_gen.cases_tail_iff zag p q,
-    right,
-    use dsf,
-    refine ⟨_, hq'⟩,
-    rw relation.refl_trans_gen.cases_tail_iff zag p dsf,
-    right,
-    use p,
-    exact ⟨(by tauto), hp'⟩,
-  end) }
+  functor.initial_of_adjunction (dq_sa_adjunction S)

@@ -76,5 +76,3 @@ def functors_extend_rke_iso :
   Ran.diagram to_Profinite F S ≅ sa_dq_functor S ⋙ S.fintype_diagram ⋙ F := sorry
 
 def extend_equiv_rke : extend F ≅ Ran.loc to_Profinite F := sorry
-
-/- Should follow from `sa_dq_initial` -/
