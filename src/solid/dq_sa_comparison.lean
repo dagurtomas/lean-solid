@@ -521,7 +521,7 @@ instance dq_sa_initial_empty [is_empty S] : (dq_sa_functor S).initial :=
     exact ⟨(by tauto), hp⟩,
   end) }
 
-instance dq_sa_initial : (sa_dq_functor S).initial :=
+instance dq_sa_initial : (dq_sa_functor S).initial :=
 begin
   by_cases nonempty S,
   { haveI : nonempty S := h,
