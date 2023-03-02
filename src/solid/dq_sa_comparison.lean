@@ -182,6 +182,61 @@ def hom_of_sa_to_dq_le {f g : structured_arrow S to_Profinite}
   (h : hom_to_dq f.hom ≤ hom_to_dq g.hom) [nonempty S] : f ⟶ g :=
 structured_arrow.hom_mk (fintype_map_of_sa_to_dq_le h) (w_lemma h)
 
+instance (S : Profinite.{u}) [is_empty S] : faithful (structured_arrow.proj S to_Profinite) :=
+  by apply_instance
+
+lemma maps_out_of_empty' {S T : Type*} [is_empty S] (f g : S → T) : f = g :=
+begin
+  ext,
+  rw is_empty_iff at _inst_1,
+  exfalso,
+  exact _inst_1 x,
+end
+
+lemma maps_out_of_empty {S T : Profinite.{u}} [is_empty S] (f g : S ⟶ T) : f = g :=
+begin
+  ext,
+  rw is_empty_iff at _inst_1,
+  exfalso,
+  exact _inst_1 a,
+end
+
+instance (S : Profinite.{u}) [is_empty S] : full (structured_arrow.proj S to_Profinite) :=
+  functor.full_of_surjective _ (λ f g p,
+begin
+  dsimp at *,
+  have : f.hom ≫ to_Profinite.map p = g.hom,
+  { ext,
+    dsimp at *,
+    exfalso,
+    rw is_empty_iff at _inst_1,
+    exact _inst_1 a, },
+  use structured_arrow.hom_mk p this,
+  refl,
+end)
+
+instance (S : Profinite.{u}) [is_empty S] : ess_surj (structured_arrow.proj S to_Profinite) :=
+begin
+  constructor,
+  intros Y,
+  let f : S → to_Profinite.obj Y := is_empty.elim' _inst_1,
+  have : continuous f,
+  { rw continuous_def,
+    intros U hU,
+    rw set.eq_empty_of_is_empty (f ⁻¹' U),
+    exact is_open_empty },
+  let f' : S ⟶ to_Profinite.obj Y := ⟨f, this⟩,
+  use structured_arrow.mk f',
+  use iso.refl Y,
+end
+
+instance (S : Profinite.{u}) [is_empty S] : is_equivalence (structured_arrow.proj S to_Profinite) :=
+  equivalence.of_fully_faithfully_ess_surj (structured_arrow.proj S to_Profinite)
+
+def sa_empty_equiv_Fintype (S : Profinite.{u}) [is_empty S] :
+  structured_arrow S to_Profinite ≌ Fintype :=
+functor.as_equivalence (structured_arrow.proj S to_Profinite)
+
 variable (S)
 
 def dq_sa_functor :
@@ -216,12 +271,30 @@ instance (Si : discrete_quotient S) :
   inhabited (costructured_arrow (sa_dq_functor S) Si) :=
 { default := costructured_arrow.mk ((unit_iso_dq_sa S).inv.app Si) }
 
-instance [nonempty S] : full (sa_dq_functor S) :=
+instance full_nonempty [nonempty S] : full (sa_dq_functor S) :=
 functor.full_of_surjective (sa_dq_functor S) $ λ f g, begin
   intros p,
   use hom_of_sa_to_dq_le (le_of_hom p),
   exact hom_eq_dq _ _,
 end
+
+-- instance full_is_empty [is_empty S] : full (sa_dq_functor S) :=
+-- functor.full_of_surjective (sa_dq_functor S) $ λ f g, begin
+--   intros p,
+--   let F := (structured_arrow.proj S to_Profinite).obj f,
+--   have : F = f.right := by refl,
+
+-- end
+
+-- instance : full (sa_dq_functor S) :=
+-- begin
+--   by_cases nonempty S,
+--   { haveI : nonempty S := h,
+--     apply_instance },
+--   rw not_nonempty_iff at h,
+--   haveI : is_empty S := h,
+--   apply_instance,
+-- end
 
 lemma le_self_sa (f : structured_arrow S to_Profinite) :
   hom_to_dq ((dq_sa_functor S).obj ((sa_dq_functor S).obj f)).hom ≤ hom_to_dq f.hom :=
@@ -325,7 +398,7 @@ adjunction.mk_of_unit_counit
   right_triangle' := by refl,
 }
 
-instance sa_dq_initial [nonempty S] : (sa_dq_functor S).initial :=
+instance sa_dq_initial_nonempty [nonempty S] : (sa_dq_functor S).initial :=
 { out := λ Si, zigzag_is_connected (λ f g,
   begin
     let h := functor.ess_image.get_iso ((es_sadq S).mem_ess_image Si),
@@ -355,5 +428,105 @@ instance sa_dq_initial [nonempty S] : (sa_dq_functor S).initial :=
     exact ⟨(by tauto), hf⟩,
   end)  }
 
-instance dq_sa_initial [nonempty S] : (dq_sa_functor S).initial :=
+instance sa_dq_initial_empty [is_empty S] : (sa_dq_functor S).initial :=
+{ out := λ Si, zigzag_is_connected (λ f g,
+  begin
+    haveI : is_empty ((functor.from_punit S).obj f.left.left) := by { dsimp, apply_instance },
+    haveI : is_empty ((functor.from_punit S).obj g.left.left) := by { dsimp, apply_instance },
+    by_cases is_empty f.left.right,
+    { let pleftright := (is_empty.elim' h : _ ⟶ g.left.right),
+      let pleft : f.left ⟶ g.left := structured_arrow.hom_mk pleftright (maps_out_of_empty _ _),
+      have : (sa_dq_functor S).map pleft ≫ g.hom = f.hom := by ext,
+      let p : f ⟶ g := costructured_arrow.hom_mk pleft this,
+      have z : zag f g := by { left, use p, },
+      unfold zigzag,
+      rw relation.refl_trans_gen.cases_tail_iff zag f g,
+      right,
+      use f,
+      exact ⟨(by tauto), z⟩, },
+    rw not_is_empty_iff at h,
+    let pleftright : g.left.right ⟶ f.left.right := λ x, h.some,
+    let pleft : g.left ⟶ f.left := structured_arrow.hom_mk pleftright (maps_out_of_empty _ _),
+    have : (sa_dq_functor S).map pleft ≫ f.hom = g.hom := by ext,
+    let p : g ⟶ f := costructured_arrow.hom_mk pleft this,
+    have z : zag f g := by { right, use p, },
+    unfold zigzag,
+    rw relation.refl_trans_gen.cases_tail_iff zag f g,
+    right,
+    use f,
+    exact ⟨(by tauto), z⟩,
+  end) }
+
+instance sa_dq_initial : (sa_dq_functor S).initial :=
+begin
+  by_cases nonempty S,
+  { haveI : nonempty S := h,
+    apply_instance },
+  rw not_nonempty_iff at h,
+  haveI : is_empty S := h,
+  apply_instance,
+end
+
+instance dq_sa_initial_nonempty [nonempty S] : (dq_sa_functor S).initial :=
   functor.initial_of_adjunction (dq_sa_adjunction S)
+
+lemma empty_Si (Si : discrete_quotient S) [is_empty S] : is_empty ((dq_sa_functor S).obj Si).right :=
+begin
+  by_contra h',
+  rw not_is_empty_iff at h',
+  haveI : nonempty ((to_Profinite.obj ((dq_sa_functor S).obj Si).right).to_CompHaus.to_Top) :=
+    h',
+  have hhom : function.surjective ((dq_sa_functor S).obj Si).hom := proj_surjective _,
+  have : nonempty S := function.surjective.nonempty hhom,
+  rw ← not_nonempty_iff at _inst_1,
+  exact _inst_1 this,
+end
+
+instance is_empty_from_punit [is_empty S] :
+  is_empty ((functor.from_punit S).obj ((dq_sa_functor S).obj ⊤).left) :=
+by {  dsimp, apply_instance}
+
+instance icadq (f : structured_arrow S to_Profinite) [is_empty S] :
+  inhabited (costructured_arrow (dq_sa_functor S) f) :=
+{ default := costructured_arrow.mk (structured_arrow.hom_mk (is_empty.elim' (empty_Si S ⊤))
+    (maps_out_of_empty _ _)) }
+
+instance dq_sa_initial_empty [is_empty S] : (dq_sa_functor S).initial :=
+{ out := λ f, zigzag_is_connected (λ p q,
+  begin
+    let top : costructured_arrow (dq_sa_functor S) f := costructured_arrow.mk
+      (structured_arrow.hom_mk (is_empty.elim' (empty_Si S ⊤)) (maps_out_of_empty _ _)),
+    haveI := empty_Si S p.left,
+    haveI := empty_Si S q.left,
+    have ptop : p.left ≤ top.left := le_top,
+    have qtop : q.left ≤ top.left := le_top,
+    have pwr : ((dq_sa_functor S).map (hom_of_le ptop) ≫ top.hom).right = p.hom.right :=
+      maps_out_of_empty' _ _,
+    have pw : (dq_sa_functor S).map (hom_of_le ptop) ≫ top.hom = p.hom := by { ext, rw pwr },
+    have qwr : ((dq_sa_functor S).map (hom_of_le qtop) ≫ top.hom).right = q.hom.right :=
+      maps_out_of_empty' _ _,
+    have qw : (dq_sa_functor S).map (hom_of_le qtop) ≫ top.hom = q.hom := by { ext, rw qwr },
+    let pmap : p ⟶ top := costructured_arrow.hom_mk (hom_of_le ptop) pw,
+    let qmap : q ⟶ top := costructured_arrow.hom_mk (hom_of_le qtop) qw,
+    have hp : zag p top := by { left, use pmap, },
+    have hq : zag top q := by { right, use qmap, },
+    unfold zigzag,
+    rw relation.refl_trans_gen.cases_tail_iff zag p q,
+    right,
+    use top,
+    refine ⟨_, hq⟩,
+    rw relation.refl_trans_gen.cases_tail_iff zag p top,
+    right,
+    use p,
+    exact ⟨(by tauto), hp⟩,
+  end) }
+
+instance dq_sa_initial : (sa_dq_functor S).initial :=
+begin
+  by_cases nonempty S,
+  { haveI : nonempty S := h,
+    apply_instance },
+  rw not_nonempty_iff at h,
+  haveI : is_empty S := h,
+  apply_instance,
+end
