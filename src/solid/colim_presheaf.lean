@@ -1,6 +1,8 @@
 import category_theory.limits.kan_extension
 import category_theory.filtered
+import for_mathlib.Profinite.extend
 import condensed.basic
+import solid.Profinite_ulift
 import solid.dq_sa_comparison
 import solid.has_limits_fintype
 
@@ -45,9 +47,14 @@ def colim_as_Kan_extension (X : Type (u+1)) : Profinite.{u}ᵒᵖ ⥤ Type (u+1)
 
 -- variables X : Type v
 -- #check yoneda.obj X
+#check Fintype.{u+1}
+#check Fintype.incl
+#check to_Profinite.{u}
+#check (Type (u+1))ᵒᵖ
 
--- def colim_as_Kan_extension' (X : Type v) : Profinite.{u}ᵒᵖ ⥤ Type (max v u) :=
---   (Lan to_Profinite.op).obj (Fintype.incl.op ⋙ ulift_functor.op ⋙ (yoneda.obj X))
+def colim_as_Kan_extension' (X : Type (u+1)) : Profinite.{u}ᵒᵖ ⥤ Type (u+1) :=
+  Profinite_ulift.op ⋙ (extend.{u+1 u+2} (Fintype.incl.{u+1}.op ⋙
+    (yoneda.obj X : (Type (u+1))ᵒᵖ  ⥤ Type (u+1))).right_op).left_op
 
 instance discrete_quotient_cofiltered (S : Profinite.{u}) :
   is_cofiltered (discrete_quotient S) := by fsplit
@@ -114,23 +121,31 @@ variables (S : Profinite.{u}ᵒᵖ)
 instance (S : Profinite.{u}ᵒᵖ) : large_category (costructured_arrow to_Profinite.op S) :=
   by apply_instance
 
+instance : essentially_small Fintype := essentially_small.mk' Fintype.skeleton.equivalence.symm
+
+instance (S : Profinite.{u}ᵒᵖ) : essentially_small (costructured_arrow to_Profinite.op S) :=
+  sorry
+
 instance (S : Profinite.{u}ᵒᵖ) : small_category (discrete_quotient S.unop)ᵒᵖ := by apply_instance
 
 -- This is the problem. Once we can index the colimit in a small category, we're much better off.
 
-set_option pp.universes true
+-- set_option pp.universes true
 
 def discrete_as_Kan_extension (X : Type (u+1)) : CondensedSet.{u} :=
-{ val := colim_as_Kan_extension X,
+{ val := colim_as_Kan_extension' X,
   cond :=
   begin
     rw is_sheaf_iff_is_sheaf_of_type,
-    rw (functor.is_proetale_sheaf_of_types_tfae (colim_as_Kan_extension X)).out 0 5,
+    rw (functor.is_proetale_sheaf_of_types_tfae (colim_as_Kan_extension' X)).out 0 5,
     refine ⟨_,_,_⟩,
     { dsimp [functor.empty_condition],
-      dsimp [colim_as_Kan_extension],
+      dsimp [colim_as_Kan_extension'],
+      dsimp [Profinite_ulift],
+      dsimp [Top_ulift],
       split,
       { rintros a b h,
+        dsimp at *,
         -- obtain ⟨j, a, ha⟩ := types.jointly_surjective'.{u+1 u} a,
         sorry,  },
       { sorry, }
