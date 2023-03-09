@@ -12,13 +12,15 @@ universes v u u'
 
 variables {C : Type u} [category.{v} C] (F : Fintype.{v} ⥤ C)
 variables {D : Type u'} [category.{v} D]
--- variables [∀ (X : Profinite), has_limits_of_shape (discrete_quotient X) C]
--- variables [∀ (X : Profinite), has_limits_of_shape (structured_arrow X to_Profinite) C]
 variables (S : Profinite.{v})
-variables [∀ (X : Profinite), has_limit (X.fintype_diagram ⋙ F)]
-variables [∀ (X : Profinite), has_limit (Ran.diagram to_Profinite F X)]
-variables [∀ (X : Profinite),
-  has_limit (dq_sa_functor X ⋙ sa_dq_functor X ⋙ X.fintype_diagram ⋙ F)]
+variables [∀ (X : Profinite.{v}), has_limits_of_shape (discrete_quotient X) C]
+variables [∀ (X : Profinite.{v}), has_limits_of_shape (structured_arrow X to_Profinite) C]
+
+instance forall_has_limit_extend : ∀ (X : Profinite), has_limit (X.fintype_diagram ⋙ F) :=
+  by apply_instance
+
+instance forall_has_limit_ran : ∀ (X : Profinite), has_limit (Ran.diagram to_Profinite F X) :=
+  by apply_instance
 
 def functors_extend_rke_nat_trans :
   sa_dq_functor S ⋙ S.fintype_diagram ⟶ structured_arrow.proj S to_Profinite :=
@@ -102,54 +104,116 @@ def limits_iso4 : limit (dq_sa_functor S ⋙ Ran.diagram to_Profinite F S) ≅
   limit (Ran.diagram to_Profinite F S) :=
 functor.initial.limit_iso (dq_sa_functor S) _
 
-def limits_iso : limit (S.fintype_diagram ⋙ F) ≅ limit (Ran.diagram to_Profinite F S) :=
-  (limits_iso1 F S) ≪≫ (limits_iso2 F S) ≪≫ (limits_iso3 F S) ≪≫ (limits_iso4 F S)
-
-instance is_iso_extend_to_rke_app (S : Profinite) : is_iso ((extend_to_rke F).app S) :=
+lemma limits_12 : ((limits_iso1 F S) ≪≫ (limits_iso2 F S)).hom =
+  limits.lim.map (whisker_right (unit_iso_dq_sa S).hom (S.fintype_diagram ⋙ F)) :=
 begin
-  have : (extend_to_rke F).app S = (limits_iso F S).hom,
-  { sorry,
-    -- dsimp [limits_iso],
-    -- rw ← iso.cancel_iso_inv_right _ _ (limits_iso4 F S),
-    -- simp only [category.comp_id, iso.hom_inv_id, category.assoc],
-    -- rw ← iso.cancel_iso_inv_right _ _ (limits_iso3 F S),
-    -- simp only [category.comp_id, iso.hom_inv_id, category.assoc],
-    -- dsimp [limits_iso1, limits_iso2, limits_iso3, limits_iso4],
-    -- dsimp [functor.initial.limit_iso],
-    -- ext,
-    -- simp only [category.assoc, limit.pre_π, has_limit.iso_of_nat_iso_inv_π, limit.pre_π_assoc],
-    -- dsimp [functors_extend_rke_iso],
-    -- simp only [category.comp_id, category.id_comp],
-    -- dsimp [functors_extend_rke_iso_aux],
-    -- dsimp [functors_extend_rke_nat_trans],
-    -- -- simp only [category_theory.functor.map_inv, whisker_left_app, nat_iso.is_iso_inv_app],
-    -- -- rw limit.pre_π (Ran.diagram to_Profinite F S) (dq_sa_functor S) j,
-    -- -- simp only [limit.pre_pre],
-    -- dsimp [extend_to_rke],
-    -- simp only [limit.lift_π_assoc, category.assoc],
-    -- simp only [← functor.map_comp],
-    -- simp only [whisker_left_app, nat_iso.is_iso_inv_app],
-    -- dsimp [hom_to_dq_to_right],
-
-    -- rw ← htdq_comp_dqth_eq_id_functors S j,
-    -- congr' 2,
-
-    -- dsimp [limit.pre],
-    -- dsimp [is_limit.map],
-    },
+  dsimp [limits_iso1, limits_iso2],
+  ext,
+  dsimp [functor.initial.limit_iso],
+  simp only [category_theory.limits.limit.pre_pre,
+    category_theory.whisker_right_app,
+    category_theory.functor.comp_map,
+    category_theory.limits.lim_map_π],
+  change dq_sa_functor S ⋙ sa_dq_functor S ⋙ S.fintype_diagram ⋙ F with
+    (dq_sa_functor S ⋙ sa_dq_functor S) ⋙ (S.fintype_diagram ⋙ F),
+  simp only [category_theory.limits.limit.pre_π],
+  dsimp [unit_iso_dq_sa],
+  have : F.map (S.fintype_diagram.map (eq_to_hom (htdq_comp_dqth_eq_id j))) =
+    (S.fintype_diagram ⋙ F).map (eq_to_hom (htdq_comp_dqth_eq_id j)) := by refl,
   rw this,
+  simp only [limit.w],
+  refl,
+end
+
+lemma limits_234 : ((limits_iso2 F S) ≪≫ (limits_iso3 F S) ≪≫ (limits_iso4 F S)).hom =
+  limits.lim.map (whisker_right (functors_extend_rke_nat_trans S) F) :=
+begin
+  dsimp,
+  rw ← iso.cancel_iso_inv_right _ _ (limits_iso4 F S),
+  simp only [category.comp_id, iso.hom_inv_id, category.assoc],
+  dsimp [limits_iso2, limits_iso3, limits_iso4],
+  ext,
+  dsimp [functor.initial.limit_iso],
+  simp only [limit.pre_π, has_limit.iso_of_nat_iso_hom_π, whisker_right_app,
+    limit.pre_π_assoc, lim_map_π, category.assoc],
+  dsimp [functors_extend_rke_iso],
+  dsimp [functors_extend_rke_iso_aux],
+  simp only [category.comp_id, category.id_comp],
+end
+
+instance : is_iso (limits.lim.map (whisker_right (functors_extend_rke_nat_trans S) F)) :=
+begin
+  rw ← limits_234 F S,
   apply_instance,
 end
 
-instance : is_iso (extend_to_rke F) := nat_iso.is_iso_of_is_iso_app _
+instance is_iso12 :
+  is_iso (limits.lim.map (whisker_right (unit_iso_dq_sa S).hom (S.fintype_diagram ⋙ F))) :=
+begin
+  rw ←limits_12 F S,
+  apply_instance,
+end
 
-def extend_equiv_rke : extend F ≅ Ran.loc to_Profinite F := as_iso (extend_to_rke _)
+def limits_iso : limit (S.fintype_diagram ⋙ F) ≅ limit (Ran.diagram to_Profinite F S) :=
+  (limits_iso1 F S) ≪≫ (limits_iso2 F S) ≪≫ (limits_iso3 F S) ≪≫ (limits_iso4 F S)
 
-def extend_equiv_rke' : extend F ≅ Ran.loc to_Profinite F :=
+def extend_equiv_rke : extend F ≅ Ran.loc to_Profinite F :=
 nat_iso.of_components (λ S, limits_iso F S)
 (begin
   intros S T f,
+  dsimp only [limits_iso, iso.trans_hom],
+  have : (limits_iso1 F S).hom ≫ (limits_iso2 F S).hom ≫ (limits_iso3 F S).hom ≫
+    (limits_iso4 F S).hom = (limits_iso1 F S).hom ≫ ((limits_iso2 F S) ≪≫
+    (limits_iso3 F S) ≪≫ (limits_iso4 F S)).hom :=
+    by simp only [iso.cancel_iso_hom_right_assoc,
+      iso.cancel_iso_hom_right, category.assoc, iso.trans_hom, iso.cancel_iso_hom_left],
+  rw this,
+  clear this,
+  rw limits_234,
+  have : (extend F).map f ≫ (limits_iso1 F T).hom ≫ (limits_iso2 F T).hom ≫ (limits_iso3 F T).hom ≫
+    (limits_iso4 F T).hom = (extend F).map f ≫ (limits_iso1 F T).hom ≫ ((limits_iso2 F T) ≪≫
+    (limits_iso3 F T) ≪≫ (limits_iso4 F T)).hom := by simp only [category.assoc, iso.trans_hom],
+  rw this,
+  clear this,
+  rw limits_234,
+  dsimp [limits_iso1],
+  dsimp [functor.initial.limit_iso],
+  simp only [← category.assoc, limit.lift_pre, limit.lift_map],
+  simp only [← lim_map_eq_lim_map, category.assoc],
+  rw limit.map_pre,
+  simp only [← category.assoc, limit.pre_pre],
   ext,
-  dsimp,
-  sorry,
+  simp only [whisker_right_app,
+    whisker_left_app,
+    cone.whisker_π,
+    nat_trans.comp_app,
+    change_cone_π_app,
+    cones.postcompose_obj_π,
+    limit.cone_π,
+    limit.lift_π,
+    category.assoc,
+    lim_map_eq_lim_map],
+  change (Ran.diagram to_Profinite F T) with (structured_arrow.map f ⋙
+    Ran.diagram to_Profinite F S),
+  simp only [whisker_right_app, whisker_left_app, lim_map_π],
+  change ((structured_arrow.map f :
+    structured_arrow T to_Profinite ⥤ structured_arrow S to_Profinite) ⋙ sa_dq_functor S ⋙
+    S.fintype_diagram ⋙ F) with (structured_arrow.map f ⋙ sa_dq_functor S) ⋙
+    (S.fintype_diagram ⋙ F),
+  simp only [category_theory.limits.limit.pre_π_assoc, ← functor.map_comp],
+  congr' 2,
+  ext,
+  dsimp [functors_extend_rke_nat_trans],
+  dsimp [hom_to_dq_to_right],
+  dsimp [proj_bot_inv],
+  congr' 1,
+  induction x,
+  refl,
+  refl,
 end)
+
+lemma extend_equiv_rke_hom_eq_extend_to_rke : (extend_equiv_rke F).hom = extend_to_rke F :=
+begin
+  sorry,
+  -- probably follows from universal property of Kan extensions
+end
