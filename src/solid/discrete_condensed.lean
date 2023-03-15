@@ -82,7 +82,80 @@ def Condensed_Type_adjunction : Type_to_Condensed.{u} ⊣ Condensed_to_Type.{u} 
 comp presheaf_Type_adjunction CondensedSet_presheaf_adjunction
 
 instance : is_iso presheaf_Type_adjunction.unit :=
+is_iso.of_iso (category_theory.functor.const_comp_evaluation_obj _ point) .
+
+def Ab_to_constant_presheaf : Ab.{u+1} ⥤ Profinite.{u}ᵒᵖ ⥤ Ab.{u+1} :=
+category_theory.functor.const _
+
+def Ab_to_Condensed : Ab.{u+1} ⥤ Condensed.{u} Ab.{u+1} :=
+Ab_to_constant_presheaf ⋙ presheaf_to_Condensed_Ab
+
+def presheaf_to_Ab : (Profinite.{u}ᵒᵖ ⥤ Ab.{u+1}) ⥤ Ab.{u+1} :=
+(evaluation _ _).obj $ op point
+
+def Condensed_to_Ab : Condensed.{u} Ab.{u+1} ⥤ Ab.{u+1} :=
+Condensed_Ab_to_presheaf ⋙ presheaf_to_Ab
+
+lemma Condensed_to_Ab_eq_Condensed_evaluation_at_point :
+  Condensed_to_Ab = Condensed.evaluation Ab.{u+1} point := by refl
+
+lemma presheaf_to_Ab_comp_Ab_to_constant_presheaf_eq_id (α : Ab.{u+1}) :
+  presheaf_to_Ab.obj (Ab_to_constant_presheaf.obj α) = α := by refl
+
+lemma presheaf_to_Ab_map {F G : Profinite.{u}ᵒᵖ ⥤ Ab.{u+1}} (f : F ⟶ G) :
+  presheaf_to_Ab.map f = f.app (op point) := by refl
+
+lemma Fmap_of_point_Ab {F : Profinite.{u}ᵒᵖ ⥤ Ab.{u+1}} (x : F.obj (op point)) :
+  F.map (punit.elim point).op x = x :=
+begin
+  have : punit.elim point.{u} = 𝟙 point.{u} := by {ext1, exact dec_trivial},
+  have h : (punit.elim point).op = 𝟙 (op point) := by {rw this, refl},
+  rw h,
+  have h₁ : F.map (𝟙 (op point.{u})) = 𝟙 (F.obj (op point)) :=
+    category_theory.functor.map_id F _,
+  rw h₁,
+  refl,
+end
+
+def can_map_from_presheaf_to_sheaf_Ab (X : Ab.{u+1}) :
+  Ab_to_constant_presheaf.obj X ⟶ Condensed_Ab_to_presheaf.obj (Ab_to_Condensed.obj X) :=
+grothendieck_topology.to_sheafify proetale_topology (Ab_to_constant_presheaf.obj X)
+
+def presheaf_Ab_counit : presheaf_to_Ab.{u} ⋙ Ab_to_constant_presheaf.{u} ⟶
+  𝟭 (Profinite.{u}ᵒᵖ ⥤ Ab.{u+1}) :=
+{ app := λ F,
+    { app := λ S, F.map (punit.elim S.unop).op,
+      naturality' :=
+      begin
+        intros S T f,
+        dsimp,
+        simp only [← category_theory.functor.map_comp],
+        dsimp [Ab_to_constant_presheaf],
+        simp only [category.id_comp],
+        congr,
+      end, } }
+
+def presheaf_Ab_adjunction : Ab_to_constant_presheaf.{u} ⊣ presheaf_to_Ab.{u} :=
+mk_of_unit_counit
+{ unit := (category_theory.functor.const_comp_evaluation_obj _ point).hom,
+  counit := presheaf_Ab_counit,
+  left_triangle' := by refl,
+  right_triangle' :=
+  begin
+    ext1, dsimp at *, ext1 F, dsimp at *, simp at *, ext1,
+    rw presheaf_to_Ab_map _,
+    unfold presheaf_Ab_counit,
+    dsimp,
+    exact Fmap_of_point_Ab x,
+  end,
+}
+
+def Condensed_Ab_adjunction : Ab_to_Condensed.{u} ⊣ Condensed_to_Ab.{u} :=
+comp presheaf_Ab_adjunction Condensed_Ab_presheaf_adjunction
+
+instance Ab_unit_is_iso : is_iso presheaf_Ab_adjunction.unit :=
 is_iso.of_iso (category_theory.functor.const_comp_evaluation_obj _ point)
+
 
 -- lemma sheafification_eq_presheaf_on_point (X : Type (u+1)) :
 --   (Type_to_Condensed.obj X).val.obj (op point) = X :=
