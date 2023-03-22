@@ -65,6 +65,8 @@ end
 
 set_option pp.universes false
 
+#exit
+
 def cond_Z : Condensed.{u} Ab.{u+1} := Ab_to_Condensed.obj (⟨ulift ℤ⟩ : Ab.{u+1})
 
 def index_for_prod (S : Profinite.{u}) : Type u := sorry

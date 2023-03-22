@@ -53,6 +53,8 @@ instance (n : ℕ) : ring (Fp n) := ulift.ring
 
 variables {n : ℕ} (M : (Module.{1} (Fp n)))
 
+#exit
+
 theorem is_solid_discrete_Fp_module : is_solid_Mod (Fp n) ((Mod_to_Condensed (Fp n)).obj M) :=
 begin
   intros S,
