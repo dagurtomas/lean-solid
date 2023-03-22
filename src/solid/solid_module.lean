@@ -29,10 +29,6 @@ instance (X : Profinite.{u}) : category.{(u+1)} ((ulift_hom.{u+1} (structured_ar
 instance has_limits_of_shape_CondMod (X : Profinite.{u}) : has_limits_of_shape
   ((structured_arrow X Fintype.to_Profinite.{u})) (Condensed.{u} (Module.{u+1} A)) :=
 begin
-  haveI : has_limits_of_shape (ulift_hom.{u+1} (ulift.{(u+1) (u+1)}
-    (structured_arrow X Fintype.to_Profinite.{u}))) (Condensed.{u} Ab.{u+1}) := by apply_instance,
-  haveI : has_limits_of_shape (ulift_hom.{u+1} (structured_arrow X Fintype.to_Profinite.{u}))
-    (Condensed.{u} Ab.{u+1}) := by apply_instance,
   haveI h2 : (ulift_hom.{u+1} (structured_arrow X Fintype.to_Profinite.{u})) ≌
     (structured_arrow X Fintype.to_Profinite.{u}) := ulift_hom.equiv.symm,
   apply has_limits_of_shape_of_equivalence h2,
@@ -50,3 +46,15 @@ def A_Solidification_profinite : Prof_free_Condensed_Mod A ⟶ Asolid_functor A 
 
 def is_solid_Mod (M : Condensed.{u} (Module.{u+1} A)) : Prop :=
   ∀ X : Profinite.{u}, is_iso ((yoneda.obj M).map ((A_Solidification_profinite A).app X).op)
+
+def Fp (n : ℕ) : Type 1 := ulift (zmod n)
+
+instance (n : ℕ) : ring (Fp n) := ulift.ring
+
+variables {n : ℕ} (M : (Module.{1} (Fp n)))
+
+theorem is_solid_discrete_Fp_module : is_solid_Mod (Fp n) ((Mod_to_Condensed (Fp n)).obj M) :=
+begin
+  intros S,
+  rw is_iso_iff_bijective,
+end
