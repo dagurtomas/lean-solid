@@ -10,6 +10,8 @@ open category_theory.adjunction
 open opposite
 open Profinite
 
+/- TODO: Unify this for condensed objects in a general category to avoid all this repetition... -/
+
 def Type_to_constant_presheaf : Type (u+1) ⥤ Profinite.{u}ᵒᵖ ⥤ Type (u+1) :=
 category_theory.functor.const _
 
@@ -61,7 +63,17 @@ def presheaf_Type_counit : presheaf_to_Type.{u} ⋙ Type_to_constant_presheaf.{u
         dsimp,
         simp only [← category_theory.functor.map_comp],
         exact rfl,
-      end, } }
+      end, },
+  naturality' :=
+  begin
+    intros S T f,
+    ext1,
+    ext1,
+    dsimp,
+    simp only [category_theory.nat_trans.naturality],
+    refl,
+  end, }
+-- was way too slow before but still worked without explicit naturality proof
 
 def presheaf_Type_adjunction : Type_to_constant_presheaf.{u} ⊣ presheaf_to_Type.{u} :=
 mk_of_unit_counit
@@ -133,7 +145,16 @@ def presheaf_Ab_counit : presheaf_to_Ab.{u} ⋙ Ab_to_constant_presheaf.{u} ⟶
         dsimp [Ab_to_constant_presheaf],
         simp only [category.id_comp],
         congr,
-      end, } }
+      end, },
+  naturality' :=
+  begin
+    intros S T f,
+    ext1,
+    ext1,
+    dsimp,
+    simp only [nat_trans.naturality],
+    refl,
+  end, }
 
 def presheaf_Ab_adjunction : Ab_to_constant_presheaf.{u} ⊣ presheaf_to_Ab.{u} :=
 mk_of_unit_counit
@@ -154,6 +175,103 @@ def Condensed_Ab_adjunction : Ab_to_Condensed.{u} ⊣ Condensed_to_Ab.{u} :=
 comp presheaf_Ab_adjunction Condensed_Ab_presheaf_adjunction
 
 instance Ab_unit_is_iso : is_iso presheaf_Ab_adjunction.unit :=
+is_iso.of_iso (category_theory.functor.const_comp_evaluation_obj _ point) .
+
+variables (A : Type (u+1)) [ring A]
+variables [∀ (X : Profinite.{u}), limits.preserves_colimits_of_shape
+  (proetale_topology.cover X)ᵒᵖ (forget (Module.{u+1} A))]
+
+def Mod_to_constant_presheaf : (Module.{u+1} A) ⥤ Profinite.{u}ᵒᵖ ⥤ (Module.{u+1} A) :=
+category_theory.functor.const _
+
+def presheaf_to_Condensed_Mod : (Profinite.{u}ᵒᵖ ⥤ Module.{u+1} A) ⥤
+  Condensed.{u} (Module.{u+1} A) :=
+presheaf_to_Sheaf _ _
+
+def Mod_to_Condensed : (Module.{u+1} A) ⥤ Condensed.{u} (Module.{u+1} A) :=
+Mod_to_constant_presheaf A ⋙ presheaf_to_Condensed_Mod A
+
+def presheaf_to_Mod : (Profinite.{u}ᵒᵖ ⥤ (Module.{u+1} A)) ⥤ (Module.{u+1} A) :=
+(evaluation _ _).obj $ op point
+
+def Condensed_Mod_to_presheaf : Condensed.{u} (Module.{u+1} A) ⥤
+  (Profinite.{u}ᵒᵖ ⥤ Module.{u+1} A) :=
+Sheaf_to_presheaf _ _
+
+def Condensed_Mod_presheaf_adjunction : presheaf_to_Condensed_Mod A ⊣ Condensed_Mod_to_presheaf A :=
+sheafification_adjunction _ _
+
+def Condensed_to_Mod : Condensed.{u} (Module.{u+1} A) ⥤ (Module.{u+1} A) :=
+Condensed_Mod_to_presheaf A ⋙ presheaf_to_Mod A
+
+lemma Condensed_to_Mod_eq_Condensed_evaluation_at_point :
+  Condensed_to_Mod A = Condensed.evaluation (Module.{u+1} A) point := by refl
+
+lemma presheaf_to_Mod_comp_Mod_to_constant_presheaf_eq_id (α : (Module.{u+1} A)) :
+  (presheaf_to_Mod A).obj ((Mod_to_constant_presheaf A).obj α) = α := by refl
+
+lemma presheaf_to_Mod_map {F G : Profinite.{u}ᵒᵖ ⥤ (Module.{u+1} A)} (f : F ⟶ G) :
+  (presheaf_to_Mod A).map f = f.app (op point) := by refl
+
+lemma Fmap_of_point_Mod {F : Profinite.{u}ᵒᵖ ⥤ (Module.{u+1} A)} (x : F.obj (op point)) :
+  F.map (punit.elim point).op x = x :=
+begin
+  have : punit.elim point.{u} = 𝟙 point.{u} := by {ext1, exact dec_trivial},
+  have h : (punit.elim point).op = 𝟙 (op point) := by {rw this, refl},
+  rw h,
+  have h₁ : F.map (𝟙 (op point.{u})) = 𝟙 (F.obj (op point)) :=
+    category_theory.functor.map_id F _,
+  rw h₁,
+  refl,
+end
+
+def can_map_from_presheaf_to_sheaf_Mod (X : (Module.{u+1} A)) :
+  (Mod_to_constant_presheaf A).obj X ⟶ (Condensed_Mod_to_presheaf A).obj
+  ((Mod_to_Condensed A).obj X) :=
+grothendieck_topology.to_sheafify proetale_topology ((Mod_to_constant_presheaf A).obj X)
+
+def presheaf_Mod_counit : presheaf_to_Mod.{u} A ⋙ Mod_to_constant_presheaf.{u} A ⟶
+  𝟭 (Profinite.{u}ᵒᵖ ⥤ (Module.{u+1} A)) :=
+{ app := λ F,
+    { app := λ S, F.map (punit.elim S.unop).op,
+      naturality' :=
+      begin
+        intros S T f,
+        dsimp,
+        simp only [← category_theory.functor.map_comp],
+        dsimp [Mod_to_constant_presheaf],
+        simp only [category.id_comp],
+        congr,
+      end, },
+  naturality' :=
+  begin
+    intros S T f,
+    ext1,
+    ext1,
+    dsimp,
+    simp only [nat_trans.naturality],
+    refl,
+  end, }
+
+def presheaf_Mod_adjunction : Mod_to_constant_presheaf.{u} A ⊣ presheaf_to_Mod.{u} A :=
+mk_of_unit_counit
+{ unit := (category_theory.functor.const_comp_evaluation_obj _ point).hom,
+  counit := presheaf_Mod_counit A,
+  left_triangle' := by refl,
+  right_triangle' :=
+  begin
+    ext1, dsimp at *, ext1 F, dsimp at *, simp at *, ext1,
+    rw presheaf_to_Mod_map _,
+    unfold presheaf_Mod_counit,
+    dsimp,
+    exact Fmap_of_point_Mod A x,
+  end,
+}
+
+def Condensed_Mod_adjunction : Mod_to_Condensed.{u} A ⊣ Condensed_to_Mod.{u} A :=
+comp (presheaf_Mod_adjunction A) (Condensed_Mod_presheaf_adjunction A)
+
+instance Mod_unit_is_iso : is_iso (presheaf_Mod_adjunction A).unit :=
 is_iso.of_iso (category_theory.functor.const_comp_evaluation_obj _ point)
 
 
