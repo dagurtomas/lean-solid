@@ -5,6 +5,7 @@ import condensed.basic
 import solid.Profinite_ulift
 import solid.dq_sa_comparison
 import solid.has_limits_fintype
+import condensed.filtered_colimits
 
 noncomputable theory
 
@@ -42,19 +43,24 @@ end
 
 set_option pp.universes false
 
+def Fintype_to_Type_u : as_small.{u} Fintype.{u} ⥤ Type (u+1) :=
+  as_small.down ⋙ Fintype.incl ⋙ ulift_functor.{u+1}
+
+def Fintype_to_Type_u' : Fintype.{u} ⥤ Type (u+1) :=
+  Fintype.incl ⋙ ulift_functor.{u+1}
+
+def res_yoneda : Type (u+1) ⥤ (as_small.{u} Fintype.{u})ᵒᵖ ⥤ Type (u+1) :=
+  (colimit_adj.restricted_yoneda Fintype_to_Type_u.{u})
+
+def colim_as_Kan_extension₁ (X : Type (u+1)) : (as_small.{u} Profinite.{u})ᵒᵖ ⥤ Type (u+1) :=
+  (Lan (as_small.down ⋙ to_Profinite ⋙ as_small.up).op).obj
+  ((colimit_adj.restricted_yoneda Fintype_to_Type_u.{u}).obj X)
+
 def colim_as_Kan_extension (X : Type (u+1)) : Profinite.{u}ᵒᵖ ⥤ Type (u+1) :=
   (Lan to_Profinite.op).obj (Fintype.incl.op ⋙ ulift_functor.{u+1}.op ⋙ (yoneda.obj X))
 
--- variables X : Type v
--- #check yoneda.obj X
-#check Fintype.{u+1}
-#check Fintype.incl
-#check to_Profinite.{u}
-#check (Type (u+1))ᵒᵖ
-
 def colim_as_Kan_extension' (X : Type (u+1)) : Profinite.{u}ᵒᵖ ⥤ Type (u+1) :=
-  Profinite_ulift.op ⋙ (extend.{u+1 u+2} (Fintype.incl.{u+1}.op ⋙
-    (yoneda.obj X : (Type (u+1))ᵒᵖ  ⥤ Type (u+1))).right_op).left_op
+  Profinite_ulift.op ⋙ (extend (Fintype.incl.op ⋙ yoneda.obj X).right_op).left_op
 
 instance discrete_quotient_cofiltered (S : Profinite.{u}) :
   is_cofiltered (discrete_quotient S) := by fsplit
@@ -95,38 +101,33 @@ instance costructured_arrow_filtered (S : Profinite.{u}ᵒᵖ) :
   is_filtered (costructured_arrow to_Profinite.op S) :=
 is_filtered.of_equivalence (structured_arrow_op_equivalence to_Profinite S.unop)
 
-instance (X : Type (u+1)) : preserves_finite_limits (colim_as_Kan_extension X) :=
+instance : representably_flat to_Profinite := ⟨λ S, structured_arrow_cofiltered S⟩
+
+instance : preserves_finite_limits to_Profinite := preserves_finite_limits_of_flat _
+
+#exit
+
+instance (X : Type (u+1)) : preserves_finite_limits (colim_as_Kan_extension' X) :=
 begin
-  apply preserves_finite_limits_of_preserves_finite_limits_of_size,
-  introsI K _ _,
-  -- dsimp [colim_as_Kan_extension],
   constructor,
-  intros F,
-  -- dsimp [Lan],
-  -- dsimp [Lan.loc],
-  constructor,
-  intros c hc,
+  intros J hJ hfJ,
+  dsimp [colim_as_Kan_extension'],
   sorry,
-  -- type_check Lan.diagram.{u} to_Profinite.op
-  --   (Fintype.incl.op ⋙ ulift_functor.{u+1}.op ⋙ (yoneda.obj X)) (op Profinite.empty),
   -- exact limits.filtered_colim_preserves_finite_limits,
-  -- constructor,
-  -- dsimp,
-  -- intros J hs hf,
-  -- unfold colim_as_Kan_extension,
+
 end
 
-variables (S : Profinite.{u}ᵒᵖ)
+-- variables (S : Profinite.{u}ᵒᵖ)
 
-instance (S : Profinite.{u}ᵒᵖ) : large_category (costructured_arrow to_Profinite.op S) :=
-  by apply_instance
+-- instance (S : Profinite.{u}ᵒᵖ) : large_category (costructured_arrow to_Profinite.op S) :=
+--   by apply_instance
 
-instance : essentially_small Fintype := essentially_small.mk' Fintype.skeleton.equivalence.symm
+-- instance : essentially_small Fintype := essentially_small.mk' Fintype.skeleton.equivalence.symm
 
-instance (S : Profinite.{u}ᵒᵖ) : essentially_small (costructured_arrow to_Profinite.op S) :=
-  sorry
+-- instance (S : Profinite.{u}ᵒᵖ) : essentially_small (costructured_arrow to_Profinite.op S) :=
+--   sorry
 
-instance (S : Profinite.{u}ᵒᵖ) : small_category (discrete_quotient S.unop)ᵒᵖ := by apply_instance
+-- instance (S : Profinite.{u}ᵒᵖ) : small_category (discrete_quotient S.unop)ᵒᵖ := by apply_instance
 
 -- This is the problem. Once we can index the colimit in a small category, we're much better off.
 
