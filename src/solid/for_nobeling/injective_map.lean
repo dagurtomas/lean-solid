@@ -1,6 +1,6 @@
 import topology.connected
 import topology.separation
-import solid.connected_discrete
+import solid.for_nobeling.connected_discrete
 
 universe u
 

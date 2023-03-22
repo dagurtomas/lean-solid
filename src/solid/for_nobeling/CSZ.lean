@@ -1,5 +1,5 @@
 import topology.category.Profinite.default
-import solid.injective_map
+import solid.for_nobeling.injective_map
 import algebra.free_algebra
 import data.finset.basic
 import group_theory.free_abelian_group
