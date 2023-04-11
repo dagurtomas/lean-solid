@@ -1,5 +1,6 @@
 import condensed.adjunctions_module
 import solid.discrete_condensed
+import solid.discrete
 
 open category_theory
 open category_theory.limits
@@ -53,7 +54,12 @@ instance (n : ℕ) : ring (Fp n) := ulift.ring
 
 variables {n : ℕ} (M : (Module.{1} (Fp n)))
 
-#exit
+instance : preserves_limits
+  (CondensedMod_to_CondensedSet A : Condensed.{u} (Module.{u+1} A) ⥤ CondensedSet.{u}) :=
+sorry
+
+instance : preserves_limits Profinite_to_Condensed :=
+sorry
 
 theorem is_solid_discrete_Fp_module : is_solid_Mod (Fp n) ((Mod_to_Condensed (Fp n)).obj M) :=
 begin
