@@ -137,7 +137,7 @@ def loc_const_CondensedSet (X : Type (u+1)) : CondensedSet.{u} :=
         exact Profinite.π_descend_to_Type π t hh ht } }
   end}
 
-def loc_const_Condensed_functor : Type (u+1) ⥤ CondensedSet.{u} :=
+def loc_const_Condensed_functor' : Type (u+1) ⥤ CondensedSet.{u} :=
 { obj := loc_const_CondensedSet,
   map := λ X Y f, { val :=
   { app := λ S t, ⟨f ∘ t.to_fun, is_locally_constant.comp t.is_locally_constant _⟩,
@@ -169,6 +169,53 @@ def loc_const_Condensed_functor : Type (u+1) ⥤ CondensedSet.{u} :=
     intros S T U f g,
     dsimp [loc_const_CondensedSet],
     dsimp [loc_const_presheaf],
+    ext,
+    simp only [types_comp_apply,
+      Sheaf.category_theory.category_comp_val,
+      function.comp_app,
+      category_theory.functor_to_types.comp,
+      locally_constant.coe_mk],
+  end, } .
+
+def loc_const_map {S : Profinite.{u}} {X Y : Type (u+1)} (f : locally_constant S X) (p : X → Y) :
+  locally_constant S Y :=
+{ to_fun := p ∘ f, is_locally_constant := is_locally_constant.comp f.is_locally_constant _ }
+
+def loc_const_Condensed_functor : Type (u+1) ⥤ CondensedSet.{u} :=
+{ obj := loc_const_CondensedSet,
+  map := λ X Y f, { val :=
+  { app := λ S t, loc_const_map t f,
+    naturality' :=
+    begin
+      intros S T g,
+      dsimp [loc_const_CondensedSet],
+      dsimp [loc_const_presheaf],
+      dsimp [loc_const_map],
+      ext,
+      simp only [category_theory.types_comp_apply, function.comp_app, locally_constant.coe_mk],
+      rw locally_constant.coe_comap g.unop _ g.unop.continuous,
+      rw locally_constant.coe_comap g.unop _ g.unop.continuous,
+      refl,
+    end, } },
+  map_id' :=
+  begin
+    intro S,
+    dsimp [loc_const_CondensedSet],
+    dsimp [loc_const_presheaf],
+    dsimp [loc_const_map],
+    ext,
+    simp only [function.comp_app,
+      Sheaf.hom.id_val,
+      locally_constant.coe_mk,
+      nat_trans.id_app,
+      types_id_apply],
+  end,
+  map_comp' :=
+  begin
+    intros S T U f g,
+    dsimp [loc_const_CondensedSet],
+    dsimp [loc_const_presheaf],
+    dsimp [loc_const_map],
     ext,
     simp only [types_comp_apply,
       Sheaf.category_theory.category_comp_val,

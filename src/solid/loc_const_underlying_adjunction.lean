@@ -28,31 +28,15 @@ begin
   exact fintype_set_range_of_compact_to_discrete hf,
 end
 
-def finset_range_of_map {X Y : Type*} {f : X → Y} [topological_space X]
-  [topological_space Y] [discrete_topology Y] [compact_space X] (hf : continuous f) :
-  finset Y := @set.to_finset Y (set.range f) (fintype_set_range_of_compact_to_discrete hf)
-
 def finset_range_of_loc_const {X : Type*} {Y : Type*}  [topological_space X]
   [compact_space X] (f : locally_constant X Y) : finset Y :=
 @set.to_finset Y (set.range f) (fintype_set_range_of_loc_const_compact_to_discrete f)
 
 instance {X Y : Type*} (f : X → Y) (A : finset X) : fintype (f '' A) := fintype.of_finite (f '' A)
 
-def parts_of_map {X Y : Type*} {f : X → Y} [topological_space X] [topological_space Y]
-  [discrete_topology Y] [compact_space X] (hf : continuous f) : finset (set X) :=
-set.to_finset ((λ i, f ⁻¹' {i}) '' (finset_range_of_map hf))
-
 def parts_of_loc_const {X : Type*} {Y : Type*} [topological_space X]
   [compact_space X] (f : locally_constant X Y) : finset (set X) :=
 set.to_finset ((λ i, f ⁻¹' {i}) '' (finset_range_of_loc_const f))
-
--- def parts_of_map_as_set {X Y : Type*} {f : X → Y} [topological_space X] [topological_space Y]
---   [discrete_topology Y] [compact_space X] (hf : continuous f) : set (set X) :=
---   parts_of_map hf
-
-instance {X Y : Type*} {f : X → Y} [topological_space X] [topological_space Y]
-  [discrete_topology Y] [compact_space X] (hf : continuous f) : fintype (parts_of_map hf) :=
-fintype.of_finset (parts_of_map hf) (λ x, iff.rfl)
 
 instance {X : Type*} {Y : Type*} [topological_space X] [compact_space X]
   (f : locally_constant X Y) : fintype (parts_of_loc_const f) :=
@@ -209,10 +193,6 @@ begin
   exact this,
 end
 
-def condensed_map_from_point (T : Profinite.{u}) (Y : CondensedSet.{u}) :
-  Y.val.obj (op point) → Y.val.obj (op T) :=
-Y.val.map (punit.elim _).op
-
 def counit_loc_const_app_coordinate {S : Profinite.{u}} {Y : CondensedSet.{u}}
   (f : locally_constant S (Y.val.obj (op point))) (T : parts_of_loc_const f) :
   Y.val.obj (op (Profinite.of T)) :=
@@ -362,14 +342,6 @@ begin
     iso.inv_hom_id_assoc],
 end .
 
--- lemma counit_coordinate_comp {S T : Profinite.{u}} {X : Type (u+1)} (f : locally_constant S X)
---   (g : T ⟶ S) : counit_loc_const_app_coordinate (f.comap g) =
-
--- def parts_of_map_comp {S T : Profinite.{u}} {X : Type (u+1)} (f : locally_constant S X)
---   (g : T ⟶ S) : parts_of_loc_const (f.comap g)
-
--- #exit
-
 lemma Profinite_comp_punit_elim {S T : Profinite.{u}} (f : S ⟶ T) :
   f ≫ punit.elim T = punit.elim S := by refl
 
@@ -444,16 +416,6 @@ def map_sigmas {S : Profinite.{u}} {X Y : Type (u+1)} (f : locally_constant S X)
   ⟶ Profinite.sigma (index_map f) :=
 sigma.desc (index_map (loc_const_map f p)) (map_for_sigmas f p)
 
--- def incl_of_part_in_sigma {S : Profinite.{u}} {X : Type (u+1)} {f : locally_constant S X}
---   (W : parts_of_loc_const f) : Profinite.of W ⟶ Profinite.sigma (index_map f) :=
--- Profinite.sigma.ι (index_map f) W
-
--- lemma sigma_desc_Profinite_hom_lemma {S : Profinite.{u}} {X Y : Type (u+1)}
---   {f : locally_constant S X} {p : X → Y} (W : parts_of_loc_const (loc_const_map f p)) :
--- sigma.desc (index_map (loc_const_on_part W))
---   (part_on_part_to_sigma_of_parts W) = Profinite_hom_sigma_of_parts (loc_const_on_part W) ≫
---   incl_of_part_in_sigma W
-
 lemma incl_lemma {S : Profinite.{u}} {X : Type (u+1)} (f : locally_constant S X)
   (W : parts_of_loc_const f) : part_to_Profinite_map f W ≫ (Profinite_iso_sigma_of_parts f).inv =
   sigma.ι (index_map f) W :=
@@ -464,13 +426,6 @@ begin
   simp only [Profinite.sigma.ι_desc],
   refl,
 end
-
--- lemma iso_cancel_iso_hom_left_apply {S T U : Profinite.{u}} (f : S ≅ T) (g g' : T ⟶ U)
-
--- lemma incl_lemma₂ {S : Profinite.{u}} {X Y : Type (u+1)} (f : locally_constant S X)
---   (p : X → Y) (W : parts_of_loc_const (loc_const_map f p)) :
---   part_to_Profinite_map (loc_const_map f p) W ≫ (Profinite_iso_sigma_of_parts f).inv =
---   sigma.ι (index_map (loc_const_map f p)) W
 
 lemma Profinite_hom_iso_lemma {S : Profinite.{u}} {X : Type (u+1)} (f : locally_constant S X) :
   ∀ x, (Profinite_hom_sigma_of_parts f) ((Profinite_iso_sigma_of_parts f).inv x) = x :=
@@ -523,24 +478,6 @@ begin
   simp only [category.id_comp, category.assoc],
   congr' 1,
   exact Profintie_hom_factorisation_aux f p W,
-  -- let g := Profinite_hom_sigma_of_parts f,
-  -- change Profinite_hom_sigma_of_parts f with g,
-  -- rw ← iso.cancel_iso_hom_left (Profinite_iso_sigma_of_parts (loc_const_on_part W)) _ _,
-  -- simp only [category_theory.iso.hom_inv_id_assoc],
-  -- dsimp [Profinite_iso_sigma_of_parts, Profinite_hom_sigma_of_parts],
-  -- ext b,
-  -- obtain ⟨T, xb, hb⟩ := sigma.ι_jointly_surjective
-  --   (index_map (loc_const_on_part W)) b,
-  -- rw ← hb,
-  -- simp only [← category_theory.comp_apply, sigma.ι_desc_assoc, sigma.ι_desc],
-  -- dsimp only [part_on_part_to_sigma_of_parts, part_to_Profinite_map, Profinite_of_to_part_map],
-  -- simp only [category_theory.category.id_comp,
-  --   continuous_map.coe_mk,
-  --   Profinite.coe_comp,
-  --   function.comp_app,
-  --   category_theory.category.assoc],
-  -- change g with Profinite_hom_sigma_of_parts f,
-  -- exact Profinite_hom_iso_lemma f _,
 end .
 
 lemma Profintie_hom_factorisation₁ {S : Profinite.{u}} {X Y : Type (u+1)} (f : locally_constant S X)
@@ -637,50 +574,6 @@ def X_of_point_to_prod {α : Type u} (X : CondensedSet.{u}) [fintype α]
   (S : α → Profinite.{u}) : X.val.obj (op point) ⟶ Π (a : α), X.val.obj (op (S a)) :=
 λ x a, X.val.map (punit.elim (S a)).op x
 
--- def map_pis {S : Profinite.{u}} {X Y : CondensedSet.{u}}
---   (f : locally_constant S (X.val.obj (op point))) (p : X ⟶ Y) :
---   Π (T : parts_of_loc_const f), X.val.obj (op (index_map f T)) ⟶
---   Π (U : parts_of_loc_const (loc_const_map f (p.val.app (op point)))), X.val.obj
---   (op (index_map (loc_const_map f (p.val.app (op point))) U)) :=
--- λ φ U,
-
--- lemma naturality_square_prods {S : Profinite.{u}} {X Y : CondensedSet.{u}}
---   (f : locally_constant S (X.val.obj (op point))) (p : X ⟶ Y)
---   (W : parts_of_loc_const (loc_const_map f (p.val.app (op point)))) :
---   Y_of_coproduct_equiv_product X (index_map (loc_const_map f
---   (p.val.app (op point)))) ∘ X.val.map (map_sigmas f (p.val.app (op point))).op =
---   map_pis f (p.val.app (op point)) ∘ Y_of_coproduct_equiv_product X
---   (index_map f)  :=
--- begin
---   type_check (Y_of_coproduct_equiv_product X (index_map (loc_const_map f
---    (p.val.app (op point)))))∘ X.val.map (map_sigmas f (p.val.app (op point))).op,
--- end
--- Y_of_coproduct_equiv_product X (index_map (loc_const_on_part W)) ∘
--- X.val.map (map_for_sigmas f (p.val.app (op point)) W).op =
-
--- lemma im_prod_eq_im_X_point {S : Profinite.{u}} {X Y : CondensedSet.{u}}
---   (f : locally_constant S (X.val.obj (op point))) (p : X ⟶ Y)
---   (W : parts_of_loc_const (loc_const_map f (p.val.app (op point)))) :
--- X_of_point_to_prod X (index_map f) (value_of_part W)
-
--- lemma coordinate_X_of_point {S : Profinite.{u}} {X : CondensedSet.{u}}
---   (f : locally_constant S (X.val.obj (op point))) :
---   counit_loc_const_app_coordinate f =
---   ((λ T, X_of_point_to_prod X (index_map f) (value_of_part T)) :
---   Π (a : parts_of_loc_const f), X.val.obj (op (index_map f a))) := by refl
-
-#check category_theory.functor_to_types.naturality
-
--- lemma X_val_map_sigma_ι_jointly_surjective {α : Type u} (X : CondensedSet.{u}) [fintype α]
---   (S : α → Profinite.{u}) (x : X.val.obj (op (Profinite.sigma S))) : ∃ a (s : X.val.obj (op (S a))),
---   X.val.map (sigma.ι S a) s = x
-
--- lemma smaller_sigmas_aux {S : Profinite.{u}} {X Y : CondensedSet.{u}}
---   (f : locally_constant S (X.val.obj (op point))) (p : X ⟶ Y)
---   (W : parts_of_loc_const (loc_const_map f (p.val.app (op point)))) :
---   Y_of_coproduct_equiv_product X (index_map (loc_const_map f (p.val.app
---   (op point)))) = (X.val.map (map_of_smaller_sigmas W).op)
-
 def prod_of_coprods_map {S : Profinite.{u}} {X Y : CondensedSet.{u}}
   (f : locally_constant S (X.val.obj (op point))) (p : X ⟶ Y) :
   (Π (T : parts_of_loc_const (loc_const_map f (p.val.app (op point)))),
@@ -746,15 +639,6 @@ def part_of_part_on_part {S : Profinite.{u}} {X Y : Type (u+1)} {f : locally_con
   {W : parts_of_loc_const (loc_const_map f p)} (V : parts_of_loc_const (loc_const_on_part W)) :
   parts_of_loc_const f :=
 part_of_value (value_of_part V) (value_of_part_on_part_satisfies_prop V)
-
--- lemma part_of_part_eq_part {S : Profinite.{u}} {X Y : Type (u+1)} {f : locally_constant S X}
---   {p : X → Y} {W : parts_of_loc_const (loc_const_map f p)}
---   (V : parts_of_loc_const (loc_const_on_part W)) :
---   Profinite.of V = Profinite.of (part_of_part_on_part V) :=
--- begin
---   dsimp [Profinite.of],
---   congr,
--- end
 
 lemma v_val_val_in_V {S : Profinite.{u}} {X Y : Type (u+1)} {f : locally_constant S X}
   {p : X → Y} {W : parts_of_loc_const (loc_const_map f p)}
@@ -914,13 +798,6 @@ begin
   exact congr_fun (prodXY_naturality W) x,
 end
 
--- lemma part_on_part_subset_part {S : Profinite.{u}} {X Y : Type (u+1)}
---   {f : locally_constant S X} {p : X → Y}
---   {W : parts_of_loc_const (loc_const_map f p)}
---   (V : parts_of_loc_const (loc_const_on_part W)) :
---   V.val ⊆ W.val :=
-
-
 lemma value_of_part_eq_p_of_value_of_part_on_part {S : Profinite.{u}} {X Y : Type (u+1)}
   {f : locally_constant S X} {p : X → Y}
   {W : parts_of_loc_const (loc_const_map f p)}
@@ -941,54 +818,6 @@ begin
   refl,
 end
 
--- lemma prod_of_coprods_map₁_surjective {S : Profinite.{u}} {X Y : CondensedSet.{u}}
---   (f : locally_constant S (X.val.obj (op point))) (p : X ⟶ Y) :
---   function.surjective (prod_of_coprods_map₁ f p) := sorry
-
--- lemma prod_lemma {S : Profinite.{u}} {X Y : CondensedSet.{u}}
---   (f : locally_constant S (X.val.obj (op point))) (p : X ⟶ Y)
---   (W : parts_of_loc_const (loc_const_map f (p.val.app (op point))))
---   (φ : (Π (T : parts_of_loc_const (loc_const_map f (p.val.app (op point)))),
---   X.val.obj (op (Profinite.sigma (index_map (loc_const_on_part T)))))) :
---   X.val.map (map_of_smaller_sigmas W).op
---   ((Y_of_coproduct_equiv_product X (index_map f)).symm
---   (prod_of_coprods_map₁ f p φ)) = φ W :=
--- begin
---   sorry,
---   -- type_check prod_of_coprods_map f p φ,
---   -- type_check X.val.map (map_of_smaller_sigmas W).op
---   --   ((Y_of_coproduct_equiv_product X (index_map f)).inv_fun
---   --   (counit_loc_const_app_coordinate f)),
---   -- -- (prod_of_coprods_map f p φ),
---   -- type_check counit_loc_const_app_coordinate f,
-
--- end
-
--- (x : X.val.obj (op (Profinite.sigma (index_map (loc_const_map f (p.val.app
---   (op point)))))))
-
--- lemma prod_lemma₁ {S : Profinite.{u}} {X Y : CondensedSet.{u}}
---   (f : locally_constant S (X.val.obj (op point))) (p : X ⟶ Y)
---   (W : parts_of_loc_const (loc_const_map f (p.val.app (op point))))
---    :
---   λ x, X.val.map (map_of_smaller_sigmas W).op
---   ((Y_of_coproduct_equiv_product X (index_map f)).symm
---   (prod_of_coprods_map₁ f p (Y_of_coproduct_equiv_product X (index_map
---   (loc_const_map f (p.val.app (op point)))) x)) =
-
-
--- lemma smaller_sigmas_aux {S : Profinite.{u}} {X Y : CondensedSet.{u}}
---   (f : locally_constant S (X.val.obj (op point))) (p : X ⟶ Y)
---   (W : parts_of_loc_const (loc_const_map f (p.val.app (op point)))) :
--- X.val.map (map_of_smaller_sigmas W).op ≫
--- X.val.map (Profinite_iso_sigma_of_parts (loc_const_on_part W)).inv.op =
--- X.val.map (sigma.ι (index_map
---     (loc_const_map f (p.val.app (op point)))) W).op
-
--- λ φ T, (X.val.map ((Profinite_hom_sigma_of_parts (loc_const_on_part T))).op)
-
-#check @category_theory.functor_to_types.naturality
-
 def counit_loc_const : CondensedSet.evaluation point ⋙ loc_const_Condensed_functor.{u} ⟶
   𝟭 CondensedSet.{u} :=
 { app := counit_loc_const_app,
@@ -996,8 +825,6 @@ def counit_loc_const : CondensedSet.evaluation point ⋙ loc_const_Condensed_fun
   begin
     intros X Y p,
     dsimp [counit_loc_const_app, counit_loc_const_app_app],
-    -- dsimp [CondensedSet.evaluation, loc_const_Condensed_functor,
-    --   loc_const_CondensedSet, loc_const_presheaf],
     ext S f,
     dsimp [CondensedSet.evaluation, loc_const_Condensed_functor] at *,
     dsimp [loc_const_CondensedSet, loc_const_presheaf] at f,
@@ -1009,7 +836,6 @@ def counit_loc_const : CondensedSet.evaluation point ⋙ loc_const_Condensed_fun
     rw inv_op_eq_op_inv (Profinite_iso_sigma_of_parts _),
     rw inv_op_eq_op_inv (Profinite_iso_sigma_of_parts f),
     simp only [← functor.map_iso_inv],
-    -- dsimp only [Y_of_coproduct_equiv_product],
     rw ← Profinite_iso_factorisation _ _,
     apply_fun (Y.val.map_iso (Profinite_iso_sigma_of_parts f).op).hom using
       Y_val_iso_hom_injective _ _,
@@ -1032,50 +858,17 @@ def counit_loc_const : CondensedSet.evaluation point ⋙ loc_const_Condensed_fun
     ext W,
     dsimp [map_sigmas_iso],
     simp only [← category_theory.functor_to_types.map_comp_apply, ← op_comp],
-    -- rw ← category_theory.functor_to_types.naturality,
     dsimp only [map_sigmas],
     simp only [sigma.ι_desc],
-    -- dsimp [map_sigmas],
-    -- simp only [← category_theory.functor_to_types.map_comp_apply, ← op_comp, sigma.ι_desc],
-
-
-
     dsimp only [map_for_sigmas, map_of_smaller_sigmas, part_to_Profinite_of_map],
     simp only [category.id_comp, category.assoc],
-    -- dsimp [counit_loc_const_app_coordinate],
-    -- -- dsimp [Y_of_coproduct_equiv_product],
-    -- apply_fun (Y.val.map_iso (Profinite_iso_sigma_of_parts (loc_const_on_part W)).op).hom
-    --   using Y_val_iso_hom_injective _ _,
-    -- simp only [category_theory.iso.op_hom,
-    --   category_theory.functor_to_types.map_comp_apply,
-    --   category_theory.functor.map_iso_hom],
-    -- simp only [← functor_to_types.map_comp_apply, ← op_comp, iso.hom_inv_id_assoc],
-    -- rw ← category_theory.functor_to_types.naturality, -- X.val Y.val p.val _ _ _,
-
     have : (sigma.desc (index_map (loc_const_on_part W))
       (part_on_part_to_sigma_of_parts W)) = map_of_smaller_sigmas W := by refl,
     rw this,
     clear this,
     dsimp [counit_loc_const_app_coordinate],
-    -- have := (value_of_part_satisfies_prop W).1,
-    -- dsimp [parts_of_loc_const, finset_range_of_loc_const] at this,
-    -- simp only [set.mem_image, set.mem_to_finset, exists_exists_eq_and, set.coe_to_finset]
-    --   at this,
-    -- obtain ⟨a, h⟩ := this,
-    -- dsimp [loc_const_map] at h,
-    -- rw ← h,
-
-    -- rw category_theory.functor_to_types.naturality,
-
-    -- have := @category_theory.functor_to_types.naturality Profinite.{u}ᵒᵖ _ X.val Y.val (op point)
-    --   (op (of W)) p.val ((punit.elim (of ↥↑W)).op : (op point) ⟶ (op (of W))) (f a),
-    -- rw ← this,
-    -- congr,
-    -- clear this,
-    -- simp only [category_theory.functor_to_types.map_comp_apply],
     rw inv_op_eq_op_inv (Profinite_iso_sigma_of_parts _),
     simp only [category_theory.functor_to_types.map_comp_apply],
-
     apply_fun (Y.val.map_iso (Profinite_iso_sigma_of_parts (loc_const_on_part W)).op).hom using
       Y_val_iso_hom_injective _ _,
     simp only [← functor.map_iso_inv],
@@ -1083,7 +876,6 @@ def counit_loc_const : CondensedSet.evaluation point ⋙ loc_const_Condensed_fun
     simp only [category_theory.iso.op_hom, category_theory.functor.map_iso_hom],
     simp only [← category_theory.functor_to_types.map_comp_apply, ← op_comp],
     rw Profinite_comp_punit_elim _,
-
     change g with (Y_of_coproduct_equiv_product X (index_map f)).symm
       (counit_loc_const_app_coordinate f),
     rw ← category_theory.functor_to_types.naturality,
@@ -1100,34 +892,350 @@ def counit_loc_const : CondensedSet.evaluation point ⋙ loc_const_Condensed_fun
     rw functor_to_types.naturality,
     congr,
     exact value_of_part_eq_p_of_value_of_part_on_part V,
+  end } .
 
-    -- let φ := (map_of_smaller_sigmas  W).op ≫
-    --   (Profinite_iso_sigma_of_parts (loc_const_on_part W)).inv.op,
-    -- have hφ : (map_of_smaller_sigmas W).op ≫
-    --   (Profinite_iso_sigma_of_parts (loc_const_on_part W)).inv.op = φ := by refl,
-    -- rw hφ,
-    -- clear hφ,
+def unit_loc_const : 𝟭 (Type (u+1)) ⟶ loc_const_Condensed_functor ⋙
+  CondensedSet.evaluation point :=
+{ app := λ X x, { to_fun := function.const point x,
+    is_locally_constant := is_locally_constant.const x }, }
 
-    -- dsimp,
+def unit_loc_const_inv : loc_const_Condensed_functor ⋙ CondensedSet.evaluation point ⟶
+  𝟭 (Type (u+1)) :=
+{ app := λ X f, f.to_fun (punit.star), }
 
-    -- obtain ⟨φ, h⟩ := (prod_of_coprods_map₁_surjective f p) (counit_loc_const_app_coordinate f),
-    -- rw ← h,
-    -- rw prod_lemma f p W φ,
-    -- --dsimp,
-    -- -- rw category_theory.functor_to_types.naturality,
-    -- -- (op (sigma (index_map f)))
-    -- rw Profinite_comp_punit_elim _,
-    -- cases W,
+def unit_loc_const_iso : 𝟭 (Type (u+1)) ≅ loc_const_Condensed_functor ⋙
+  CondensedSet.evaluation point :=
+{ hom := unit_loc_const,
+  inv := unit_loc_const_inv,
+  hom_inv_id' :=
+  begin
+    ext X x,
+    dsimp at *,
+    refl,
+  end,
+  inv_hom_id' :=
+  begin
+    ext X f x,
+    dsimp at *,
+    have : x = punit.star := punit_eq_star x,
+    rw this,
+    refl,
+  end } .
 
-    -- -- rw Profintie_hom_factorisation₁ f (p.val.app (op point)) W,
-    -- -- rw Profintie_hom_factorisation_aux f (p.val.app (op point)) W,
+instance unit_loc_const_is_iso : is_iso unit_loc_const :=
+is_iso.of_iso unit_loc_const_iso
+
+lemma Profinite_inv_hom_iso_lemma {S : Profinite.{u}} {X : Type (u+1)} (f : locally_constant S X) :
+  ∀ x, (Profinite_iso_sigma_of_parts f).inv ((Profinite_iso_sigma_of_parts f).hom x) = x :=
+begin
+  intro x,
+  simp only [← category_theory.comp_apply],
+  simp only [Profinite.coe_id, id.def, category_theory.iso.hom_inv_id, eq_self_iff_true],
+end
+
+lemma loc_const_map_unit {S : Profinite.{u}} {X : Type (u+1)} (f : locally_constant S X) (s : S)
+  : ((loc_const_map f (unit_loc_const.app X)) s).to_fun (punit.star : point) = f s :=
+by refl
+
+-- lemma loc_const_from_point {S : Profinite.{u}} {X : Type (u+1)} (f : locally_constant S X) (s : S)
+--   (g : locally_constant point X) (y : point) :
+
+lemma injective_comp_iso {S T : Profinite.{u}} {X : Type (u+1)} (i : T ≅ S) :
+  function.injective (λ (f : S → X), f ∘ i.hom) :=
+begin
+  refine function.bijective.injective _,
+  rw function.bijective_iff_has_inverse,
+  use λ g, g ∘ i.inv,
+  split,
+  { intro a,
+    ext,
+    dsimp,
+    simp only [← category_theory.comp_apply, Profinite.coe_id, id.def,
+      iso.inv_hom_id], },
+  intro a,
+  ext,
+  dsimp,
+  simp only [← category_theory.comp_apply, Profinite.coe_id, id.def,
+    iso.hom_inv_id],
+end
+
+lemma Profinite_iso_comp_assoc {S T : Profinite} {X : Type (u+1)} (i : S ≅ T) (f : S → X) :
+  (f ∘ i.inv) ∘ i.hom = f :=
+begin
+  ext,
+  dsimp,
+  simp only [← category_theory.comp_apply, Profinite.coe_id, id.def, iso.hom_inv_id],
+end
+
+lemma left_triangle_lemma₁ {α : Type u} (X : CondensedSet.{u}) [fintype α]
+  (S : α → Profinite.{u}) (a : α) : ∀ φ, X.val.map (sigma.ι S a).op
+  ((Y_of_coproduct_equiv_product X S).symm φ) = φ a :=
+begin
+  intro φ,
+  obtain ⟨x, h⟩ := equiv.surjective (Y_of_coproduct_equiv_product X S) φ,
+  rw ← h,
+  simp only [equiv.symm_apply_apply],
+  refl,
+end
+
+lemma left_triangle_lemma₂ {S : Profinite.{u}ᵒᵖ} {X : Type (u+1)}
+  {f : (loc_const_Condensed_functor.obj X).val.obj S}
+  (W : (parts_of_loc_const (loc_const_map f (unit_loc_const.app X)))) :
+  ∀ g x, ((loc_const_Condensed_functor.obj X).val.map
+  (sigma.ι (index_map (loc_const_map f (unit_loc_const.app X))) W).op g).to_fun x =
+  g.to_fun ((sigma.ι (index_map (loc_const_map f (unit_loc_const.app X))) W) x) :=
+begin
+  intros g x,
+  dsimp [loc_const_Condensed_functor, loc_const_CondensedSet, loc_const_presheaf],
+  rw locally_constant.coe_comap _ _ (sigma.ι _ _).continuous,
+end
+
+lemma left_triangle_lemma₃ {S : Profinite.{u}ᵒᵖ} {X : Type (u+1)}
+  {f : (loc_const_Condensed_functor.obj X).val.obj S}
+  (W : (parts_of_loc_const (loc_const_map f (unit_loc_const.app X))))
+  (y : unop (op point)) (xs : W) : (value_of_part W).to_fun y = f.to_fun xs.val :=
+begin
+  have := value_of_part_satisfies_prop W,
+  dsimp [loc_const_map] at *,
+  cases xs,
+  rw ← this.2 at xs_property,
+  have h : ((unit_loc_const.app X) ∘ f.to_fun) xs_val = value_of_part W := xs_property,
+  dsimp [unit_loc_const] at h,
+  rw ← h,
+  dsimp,
+  refl,
+end .
+
+lemma left_triangle_lemma {S : Profinite.{u}ᵒᵖ} {X : Type (u+1)}
+  (f : (loc_const_Condensed_functor.obj X).val.obj S) :
+  (counit_loc_const.app (loc_const_Condensed_functor.obj X)).val.app S
+  ((loc_const_Condensed_functor.map (unit_loc_const.app X)).val.app S f) = f :=
+begin
+    let Y := loc_const_Condensed_functor.obj X,
+    change loc_const_Condensed_functor.obj X with Y,
+    dsimp [loc_const_Condensed_functor], --, loc_const_CondensedSet, loc_const_presheaf],
+    dsimp [counit_loc_const, counit_loc_const_app, counit_loc_const_app_app],
+    dsimp [loc_const_Condensed_functor, loc_const_CondensedSet, loc_const_presheaf] at *,
+    rw ← locally_constant.coe_inj,
+    rw locally_constant.coe_comap _ _ (Profinite_iso_sigma_of_parts _).inv.continuous,
+    apply_fun λ g, g ∘ (Profinite_iso_sigma_of_parts (loc_const_map f (unit_loc_const.app X))).hom
+      using injective_comp_iso (Profinite_iso_sigma_of_parts _),
+    dsimp,
+    rw Profinite_iso_comp_assoc (Profinite_iso_sigma_of_parts _) _,
+    ext s,
+    obtain ⟨W, xs, hs⟩ := sigma.ι_jointly_surjective
+      (index_map ((loc_const_map f (unit_loc_const.app X)))) s,
+    rw ← hs,
+    dsimp [Profinite_iso_sigma_of_parts, Profinite_hom_sigma_of_parts],
+    simp only [← category_theory.comp_apply, sigma.ι_desc],
+    have := left_triangle_lemma₂ W,
+    dsimp at this,
+    rw ← this _ xs,
+    have h := left_triangle_lemma₁ Y (index_map (loc_const_map f (unit_loc_const.app X))) W,
+    change loc_const_Condensed_functor.obj X with Y,
+    rw h (counit_loc_const_app_coordinate (loc_const_map f (unit_loc_const.app X))),
+    dsimp [counit_loc_const_app_coordinate, loc_const_map, unit_loc_const],
+    dsimp [loc_const_Condensed_functor, loc_const_CondensedSet, loc_const_presheaf],
+    rw locally_constant.coe_comap _ _ (punit.elim _).continuous,
+    dsimp,
+    have h' := left_triangle_lemma₃ W (punit.elim (of W) xs) xs,
+    dsimp at h',
+    exact h',
+end .
+
+def loc_const_const (S : Profinite.{u}) {X : Type (u+1)} (x : X) : locally_constant S X :=
+{ to_fun := function.const S x,
+  is_locally_constant := is_locally_constant.const x }
+
+lemma loc_const_from_point_is_const {X : Type (u+1)} (f : locally_constant point X) :
+  f = loc_const_const point (f punit.star) :=
+begin
+  ext,
+  rw punit_eq_star x,
+  dsimp [loc_const_const],
+  refl,
+end
+
+lemma parts_of_loc_const_const {S : Profinite.{u}} [inhabited S] {X : Type (u+1)} (x : X) :
+  parts_of_loc_const (loc_const_const S x) = {set.univ} :=
+begin
+  ext,
+  dsimp [parts_of_loc_const, finset_range_of_loc_const],
+  simp only [set.mem_image, set.mem_to_finset, exists_exists_eq_and,
+    finset.mem_singleton, set.coe_to_finset],
+  split,
+  { intro h,
+    obtain ⟨y, hy⟩ := h,
+    obtain ⟨s, hs⟩ := hy.1,
+    dsimp [loc_const_const] at hs,
+    rw ← hs at hy,
+    rw ← hy.2,
+    refine set.eq_univ_of_subset _ rfl,
+    intros z hz,
+    simp only [set.mem_preimage, set.mem_singleton_iff],
+    refl },
+  intro ha,
+  use x,
+  split,
+  { use _inst_1.default,
+    refl },
+  rw ha,
+  refine set.eq_univ_of_subset _ ha,
+  intros s hs,
+  simp only [set.mem_preimage, set.mem_singleton_iff],
+  refl,
+end
+
+instance subsingleton_parts_of_const {S : Profinite.{u}} [inhabited S] {X : Type (u+1)} (x : X) :
+  subsingleton (parts_of_loc_const (loc_const_const S x)) :=
+begin
+  rw subsingleton_iff,
+  intros W T,
+  cases W,
+  cases T,
+  rw parts_of_loc_const_const at W_property,
+  rw parts_of_loc_const_const at T_property,
+  ext,
+  dsimp,
+  simp only [finset.mem_singleton] at W_property,
+  simp only [finset.mem_singleton] at T_property,
+  rw W_property,
+  rw T_property,
+end
+
+lemma set_univ_mem_parts_of_loc_const_const {S : Profinite.{u}} [inhabited S] {X : Type (u+1)}
+  (x : X) : set.univ ∈ parts_of_loc_const (loc_const_const S x) :=
+begin
+  rw parts_of_loc_const_const,
+  simp only [finset.mem_singleton],
+end
+
+def set_univ_as_parts_of_loc_const_const {S : Profinite.{u}} [inhabited S] {X : Type (u+1)}
+  (x : X) : parts_of_loc_const (loc_const_const S x) :=
+⟨set.univ, set_univ_mem_parts_of_loc_const_const x⟩
+
+instance unique_parts_of_const {S : Profinite.{u}} [inhabited S] {X : Type (u+1)} (x : X) :
+  unique (parts_of_loc_const (loc_const_const S x)) :=
+unique_of_subsingleton (set_univ_as_parts_of_loc_const_const x)
+
+def unique_to_pi {α : Type*} [unique α] (f : α → Type*) :
+  f default → (Π (a : α), f a) := λ x a,
+begin
+  rw unique.eq_default a,
+  exact x,
+end
+
+def sigma_to_unique {α : Type*} [unique α] (f : α → Type*) :
+  (Σ (a : α), f a) → f default :=
+begin
+  intro h,
+  obtain ⟨a, ha⟩ := h,
+  rw unique.default_eq a,
+  exact ha,
+end
+
+lemma Profinite_eq_default {α : Type u} [fintype α] [unique α]
+  (S : α → Profinite.{u}) (a : α) : S a = S default :=
+begin
+  rw unique.default_eq a,
+end
+
+def Profinite_to_default {α : Type u} [fintype α] [unique α]
+  (S : α → Profinite.{u}) (a : α) : S a ⟶ S default :=
+eq_to_hom (Profinite_eq_default S a)
+
+def Profinite_sigma_to_default {α : Type u} [fintype α] [unique α]
+  (S : α → Profinite.{u}) : Profinite.sigma S ⟶ S default :=
+sigma.desc S (Profinite_to_default S)
+
+def sigma_iso_default  {α : Type u} [fintype α] [unique α]
+  (S : α → Profinite.{u}) : Profinite.sigma S ≅ S default :=
+{ hom := Profinite_sigma_to_default S,
+  inv := sigma.ι S default,
+  hom_inv_id' :=
+  begin
+    dsimp [Profinite_sigma_to_default],
+    ext1 s,
+    dsimp,
+    obtain ⟨a, x, h⟩ := sigma.ι_jointly_surjective S s,
+    rw ← h,
+    simp only [← category_theory.comp_apply, sigma.ι_desc],
+    dsimp [Profinite_to_default],
+    simp only [← category_theory.comp_apply],
+  end,
+  inv_hom_id' :=
+  begin
+    dsimp [Profinite_sigma_to_default],
+    simp only [Profinite.sigma.ι_desc],
+    dsimp [Profinite_to_default],
+    refl,
+  end
+}
 
 
-    -- -- obtain ⟨a, h⟩ := equiv.surjective
-    -- --   (Y_of_coproduct_equiv_product X (index_map f))
-    -- --   (counit_loc_const_app_coordinate f),
-    -- -- rw ← h,
-    -- -- simp only [equiv.symm_apply_apply],
+-- lemma Profinite_hom_sigma_loc_const_const {S : Profinite.{u}} {X : Type (u+1)}
+--   (x : X) (s : S) : (Profinite_iso_sigma_of_parts (loc_const_const S x)).inv s = s
 
-    -- -- dsimp [Y_of_coproduct_equiv_product] at h,
+-- lemma index_map_loc_const_const {S : Profinite.{u}} [inhabited S] {X : Type (u+1)} (x : X) :
+--   ∀ W, (index_map (loc_const_const S x) W) = S :=
+-- begin
+--   intro W,
+--   have : W.val = set.univ,
+--   { cases W,
+--     rw parts_of_loc_const_const x at W_property,
+--     simp only [finset.mem_singleton] at W_property,
+--     exact W_property,
+--     exact _inst_1, },
+--   dsimp [index_map],
+--   dsimp at this,
+-- end
+
+def prod_to_set_loc_const {X : CondensedSet.{u}}
+  (f : locally_constant point (X.val.obj (op point))) :
+  (Π (W : parts_of_loc_const f), X.val.obj $ op $ (index_map f) W) → X.val.obj (op point) :=
+begin
+  intro x,
+  rw loc_const_from_point_is_const f at x,
+  rw parts_of_loc_const_const (f punit.star) at x,
+end
+
+lemma right_triangle_lemma {X : CondensedSet.{u}}
+  (f : locally_constant point (X.val.obj (op point))) :
+  (counit_loc_const.app X).val.app (op point) f = f punit.star :=
+begin
+  dsimp [counit_loc_const, counit_loc_const_app, counit_loc_const_app_app],
+  dsimp [Profinite_iso_sigma_of_parts, Profinite_hom_sigma_of_parts, Y_of_coproduct_equiv_product],
+  rw loc_const_from_point_is_const f,
+  rw parts_of_loc_const_const (f punit.star),
+end .
+
+def loc_const_adjunction : loc_const_Condensed_functor ⊣ CondensedSet.evaluation point :=
+adjunction.mk_of_unit_counit
+{ unit := unit_loc_const,
+  counit := counit_loc_const,
+  left_triangle' :=
+  begin
+    ext X S f : 6,
+    dsimp at *,
+    exact left_triangle_lemma f,
+  end,
+  right_triangle' :=
+  begin
+    ext X : 2,
+    dsimp,
+    simp only [category_theory.category.id_comp],
+    have h :=  (unit_loc_const_iso.app (X.val.obj (op point))).hom_inv_id',
+    dsimp at h,
+    rw ← h,
+    dsimp [unit_loc_const_iso],
+    congr,
+    ext f,
+    dsimp [unit_loc_const_inv],
+    dsimp [loc_const_Condensed_functor, loc_const_CondensedSet, loc_const_presheaf] at f,
+    exact right_triangle_lemma f,
+    -- ext X x,
+    -- dsimp at *,
+    -- dsimp [counit_loc_const, counit_loc_const_app, counit_loc_const_app_app],
+
+
   end } .
