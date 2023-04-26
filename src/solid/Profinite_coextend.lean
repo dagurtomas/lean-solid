@@ -113,6 +113,8 @@ terminal_op_of_initial (bot_initial X.unop)
 -- def top_op_initial (X : Fintypeᵒᵖ) :
 --   is_initial $ opposite.op (⊤ : discrete_quotient)
 
+end Profinite
+
 #exit
 
 -- TODO: Finish this dualisation of for_mathlib.Profinite.extend

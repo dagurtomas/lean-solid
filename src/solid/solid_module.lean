@@ -65,4 +65,8 @@ theorem is_solid_discrete_Fp_module : is_solid_Mod (Fp n) ((Mod_to_Condensed (Fp
 begin
   intros S,
   rw is_iso_iff_bijective,
+  -- split,
+  -- intros a b h,
+  -- dsimp [A_Solidification_profinite, Asolid_functor] at *,
+  sorry,
 end
