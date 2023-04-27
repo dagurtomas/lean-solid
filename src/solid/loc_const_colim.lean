@@ -1,5 +1,5 @@
 import solid.discrete_loc_const
-import solid.Profinite_coextend
+-- import solid.Profinite_coextend
 import condensed.adjunctions_module
 
 noncomputable theory
@@ -154,6 +154,8 @@ def CondensedMod_of_CondensedSet_with_module_inst (X : CondensedSet.{u})
       (forget (Module.{u+1} A)),
     exact X.cond,
   end }
+
+#exit
 
 instance (T : Profinite.{u}) : ∀ (S : Profinite.{u}ᵒᵖ), add_comm_group
   ((Profinite_to_Condensed.obj T).val.obj S) := sorry
