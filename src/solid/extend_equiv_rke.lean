@@ -8,10 +8,10 @@ open Fintype
 open category_theory
 open category_theory.limits
 
-universes v u u'
+universes v v' u
 
-variables {C : Type u} [category.{v} C] (F : Fintype.{v} ⥤ C)
-variables {D : Type u'} [category.{v} D]
+variables {C : Type u} [category.{v'} C] (F : Fintype.{v} ⥤ C)
+-- variables {D : Type u'} [category.{v} D]
 variables (S : Profinite.{v})
 variables [∀ (X : Profinite.{v}), has_limits_of_shape (discrete_quotient X) C]
 variables [∀ (X : Profinite.{v}), has_limits_of_shape (structured_arrow X to_Profinite) C]
@@ -85,9 +85,6 @@ def functors_extend_rke_iso :
   (iso_whisker_right (functors_extend_rke_iso_aux.{v} S) F) ≪≫
   (functor.associator (dq_sa_functor S) (structured_arrow.proj S to_Profinite) F)
 
-def extend_to_rke : extend F ⟶ Ran.loc to_Profinite F :=
-  (Ran.equiv to_Profinite F (extend F)).symm (extend_extends F).hom
-
 def limits_iso1 : limit (S.fintype_diagram ⋙ F) ≅
   limit (sa_dq_functor S ⋙ S.fintype_diagram ⋙ F) :=
 (functor.initial.limit_iso (sa_dq_functor S) (S.fintype_diagram ⋙ F)).symm
@@ -157,22 +154,29 @@ end
 def limits_iso : limit (S.fintype_diagram ⋙ F) ≅ limit (Ran.diagram to_Profinite F S) :=
   (limits_iso1 F S) ≪≫ (limits_iso2 F S) ≪≫ (limits_iso3 F S) ≪≫ (limits_iso4 F S)
 
-def extend_equiv_rke : extend F ≅ Ran.loc to_Profinite F :=
-nat_iso.of_components (λ S, limits_iso F S)
+variables {D : Type u} [category.{v} D] (G : Fintype.{v} ⥤ D)
+variables [∀ (X : Profinite.{v}), has_limits_of_shape (discrete_quotient X) D]
+variables [∀ (X : Profinite.{v}), has_limits_of_shape (structured_arrow X to_Profinite) D]
+
+def extend_to_rke : extend G ⟶ Ran.loc to_Profinite G :=
+  (Ran.equiv to_Profinite G (extend G)).symm (extend_extends G).hom
+
+def extend_equiv_rke : extend G ≅ Ran.loc to_Profinite G :=
+nat_iso.of_components (λ S, limits_iso G S)
 (begin
   intros S T f,
   dsimp only [limits_iso, iso.trans_hom],
-  have : (limits_iso1 F S).hom ≫ (limits_iso2 F S).hom ≫ (limits_iso3 F S).hom ≫
-    (limits_iso4 F S).hom = (limits_iso1 F S).hom ≫ ((limits_iso2 F S) ≪≫
-    (limits_iso3 F S) ≪≫ (limits_iso4 F S)).hom :=
+  have : (limits_iso1 G S).hom ≫ (limits_iso2 G S).hom ≫ (limits_iso3 G S).hom ≫
+    (limits_iso4 G S).hom = (limits_iso1 G S).hom ≫ ((limits_iso2 G S) ≪≫
+    (limits_iso3 G S) ≪≫ (limits_iso4 G S)).hom :=
     by simp only [iso.cancel_iso_hom_right_assoc,
       iso.cancel_iso_hom_right, category.assoc, iso.trans_hom, iso.cancel_iso_hom_left],
   rw this,
   clear this,
   rw limits_234,
-  have : (extend F).map f ≫ (limits_iso1 F T).hom ≫ (limits_iso2 F T).hom ≫ (limits_iso3 F T).hom ≫
-    (limits_iso4 F T).hom = (extend F).map f ≫ (limits_iso1 F T).hom ≫ ((limits_iso2 F T) ≪≫
-    (limits_iso3 F T) ≪≫ (limits_iso4 F T)).hom := by simp only [category.assoc, iso.trans_hom],
+  have : (extend G).map f ≫ (limits_iso1 G T).hom ≫ (limits_iso2 G T).hom ≫ (limits_iso3 G T).hom ≫
+    (limits_iso4 G T).hom = (extend G).map f ≫ (limits_iso1 G T).hom ≫ ((limits_iso2 G T) ≪≫
+    (limits_iso3 G T) ≪≫ (limits_iso4 G T)).hom := by simp only [category.assoc, iso.trans_hom],
   rw this,
   clear this,
   rw limits_234,
@@ -193,13 +197,13 @@ nat_iso.of_components (λ S, limits_iso F S)
     limit.lift_π,
     category.assoc,
     lim_map_eq_lim_map],
-  change (Ran.diagram to_Profinite F T) with (structured_arrow.map f ⋙
-    Ran.diagram to_Profinite F S),
+  change (Ran.diagram to_Profinite G T) with (structured_arrow.map f ⋙
+    Ran.diagram to_Profinite G S),
   simp only [whisker_right_app, whisker_left_app, lim_map_π],
   change ((structured_arrow.map f :
     structured_arrow T to_Profinite ⥤ structured_arrow S to_Profinite) ⋙ sa_dq_functor S ⋙
-    S.fintype_diagram ⋙ F) with (structured_arrow.map f ⋙ sa_dq_functor S) ⋙
-    (S.fintype_diagram ⋙ F),
+    S.fintype_diagram ⋙ G) with (structured_arrow.map f ⋙ sa_dq_functor S) ⋙
+    (S.fintype_diagram ⋙ G),
   simp only [category_theory.limits.limit.pre_π_assoc, ← functor.map_comp],
   congr' 2,
   ext,
@@ -212,7 +216,7 @@ nat_iso.of_components (λ S, limits_iso F S)
   refl,
 end)
 
-lemma extend_equiv_rke_hom_eq_extend_to_rke : (extend_equiv_rke F).hom = extend_to_rke F :=
+lemma extend_equiv_rke_hom_eq_extend_to_rke : (extend_equiv_rke G).hom = extend_to_rke G :=
 begin
   sorry,
   -- probably follows from universal property of Kan extensions
