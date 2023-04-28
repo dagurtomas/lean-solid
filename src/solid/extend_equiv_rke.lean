@@ -11,7 +11,6 @@ open category_theory.limits
 universes v v' u
 
 variables {C : Type u} [category.{v'} C] (F : Fintype.{v} ⥤ C)
--- variables {D : Type u'} [category.{v} D]
 variables (S : Profinite.{v})
 variables [∀ (X : Profinite.{v}), has_limits_of_shape (discrete_quotient X) C]
 variables [∀ (X : Profinite.{v}), has_limits_of_shape (structured_arrow X to_Profinite) C]
@@ -215,6 +214,8 @@ nat_iso.of_components (λ S, limits_iso G S)
   refl,
   refl,
 end)
+
+#exit
 
 lemma extend_equiv_rke_hom_eq_extend_to_rke : (extend_equiv_rke G).hom = extend_to_rke G :=
 begin
