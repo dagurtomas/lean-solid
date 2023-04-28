@@ -9,6 +9,15 @@ universe u
 open category_theory
 open category_theory.adjunction
 
+/-  Let `X : Type (u+1)`.
+    `Type_to_Condensed.obj X : CondensedSet.{u}` is the constant sheaf at `X`.
+    `loc_const_Condensed_functor.obj X` is `loc_const_CondensedSet X : CondensedSet.{u}` which
+    is the sheaf taking a profinite set `T` to locally constant maps `T → X`.
+    `lan_CondensedSet X` is the left Kan extension of the funtor
+    `fin_yoneda X : Fintype.{u}ᵒᵖ ⥤ Type (u+1)`, taking a `Fintype` `Y` to `Y → X`
+    along the embedding `to_Profinite.op : Fintype.{u}ᵒᵖ ⥤ Profinite.{u}ᵒᵖ.
+    These are all isomorphic as shown below. -/
+
 def Type_to_loc_const_Condensed_iso : Type_to_Condensed ≅ loc_const_Condensed_functor :=
   left_adjoint_uniq Condensed_Type_adjunction loc_const_adjunction
 
