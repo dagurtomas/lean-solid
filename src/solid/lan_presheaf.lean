@@ -144,13 +144,6 @@ begin
   simp only [category.comp_id, category.id_comp],
 end
 
--- lemma lemma1 {S T : Profinite.{u}ᵒᵖ} (f : S ⟶ T) (j : costructured_arrow to_Profinite.op S) :
---   ∀ x, ((sa_dq_functor (unop T)).obj (unop
---   ((structured_arrow_op_equivalence to_Profinite (unop T)).inverse.obj
---   ((costructured_arrow.map f).obj j)))).proj x =
---   ((sa_dq_functor (unop S)).obj (unop ((structured_arrow_op_equivalence to_Profinite
---   (unop S)).inverse.obj j))).proj (f.unop x) := sorry
-
 def lan_presheaf (X : Type (u+1)) : Profinite.{u}ᵒᵖ ⥤ Type (u+1) :=
   (Lan to_Profinite.op).obj (fin_yoneda X)
 
@@ -235,3 +228,12 @@ end))
     hom_to_dq_to_right, proj_bot_inv],
   congr,
 end) .
+
+def lan_CondensedSet (X : Type (u+1)) : CondensedSet.{u} :=
+{ val := lan_presheaf X,
+  cond :=
+  begin
+    rw is_sheaf_iff_is_sheaf_of_type,
+    exact presieve.is_sheaf_iso _ (lan_presheaf_iso_loc_const_presheaf X).symm
+      ((is_sheaf_iff_is_sheaf_of_type _ _).mp (loc_const_CondensedSet X).cond),
+  end }
