@@ -1,5 +1,4 @@
 import solid.discrete_loc_const
-import solid.discrete_condensed
 
 noncomputable theory
 

@@ -1,6 +1,7 @@
-import solid.discrete_loc_const
--- import solid.Profinite_coextend
+import topology.category.Profinite.as_limit
+import topology.category.Profinite.cofiltered_limit
 import condensed.adjunctions_module
+import solid.discrete_loc_const
 
 noncomputable theory
 

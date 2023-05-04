@@ -1,5 +1,4 @@
 import solid.discrete_condensed
-import solid.discrete
 import topology.locally_constant.algebra
 
 noncomputable theory
