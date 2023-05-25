@@ -11,8 +11,10 @@ It is forked from the Liquid Tensor Experiment (see https://github.com/leanprove
 * To download and open a copy of the repository
   by executing the following command in a terminal:
   ```
-  leanproject get lean-solid
+  leanproject get dagurtomas/lean-solid
   code lean-solid
+  leanproject get-mathlib-cache
+  ./scripts/fetch-olean-cache.sh
   ```
 * Everything added by me for the project about solid abelian groups so far is contained in the directory src/solid/
 
