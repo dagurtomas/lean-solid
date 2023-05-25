@@ -15,6 +15,7 @@ The main results are in the file `src/discrete/discrete_comparison.lean` along w
   leanproject get dagurtomas/lean-solid
   cd lean-solid
   git checkout discrete
+  leanproject get-mathlib-cache
   ./scripts/get-cache.sh
   ./scripts/fetch_olean_cache.sh
   lean --make src/discrete/discrete_comparison.lean
