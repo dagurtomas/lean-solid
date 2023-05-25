@@ -1,5 +1,5 @@
 import for_mathlib.Profinite.extend
-import solid.dq_sa_comparison
+import discrete.dq_sa_comparison
 
 noncomputable theory
 
@@ -214,11 +214,3 @@ nat_iso.of_components (λ S, limits_iso G S)
   refl,
   refl,
 end)
-
-#exit
-
-lemma extend_equiv_rke_hom_eq_extend_to_rke : (extend_equiv_rke G).hom = extend_to_rke G :=
-begin
-  sorry,
-  -- probably follows from universal property of Kan extensions
-end

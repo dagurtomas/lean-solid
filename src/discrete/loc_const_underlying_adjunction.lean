@@ -1,4 +1,4 @@
-import solid.discrete_loc_const
+import discrete.discrete_loc_const
 
 noncomputable theory
 

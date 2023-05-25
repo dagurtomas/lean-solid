@@ -1,6 +1,6 @@
-import solid.discrete_condensed
-import solid.loc_const_underlying_adjunction
-import solid.lan_presheaf
+import discrete.discrete_condensed
+import discrete.loc_const_underlying_adjunction
+import discrete.lan_presheaf
 
 noncomputable theory
 

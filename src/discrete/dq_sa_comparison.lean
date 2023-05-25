@@ -1,5 +1,5 @@
 import topology.category.Profinite.as_limit
-import solid.new_final
+import discrete.new_final
 import category_theory.functor.flat
 
 /- solid.new_final is just category_theory.functor.final copied from a newer version of mathlib,
@@ -277,24 +277,6 @@ functor.full_of_surjective (sa_dq_functor S) $ λ f g, begin
   use hom_of_sa_to_dq_le (le_of_hom p),
   exact hom_eq_dq _ _,
 end
-
--- instance full_is_empty [is_empty S] : full (sa_dq_functor S) :=
--- functor.full_of_surjective (sa_dq_functor S) $ λ f g, begin
---   intros p,
---   let F := (structured_arrow.proj S to_Profinite).obj f,
---   have : F = f.right := by refl,
-
--- end
-
--- instance : full (sa_dq_functor S) :=
--- begin
---   by_cases nonempty S,
---   { haveI : nonempty S := h,
---     apply_instance },
---   rw not_nonempty_iff at h,
---   haveI : is_empty S := h,
---   apply_instance,
--- end
 
 lemma le_self_sa (f : structured_arrow S to_Profinite) :
   hom_to_dq ((dq_sa_functor S).obj ((sa_dq_functor S).obj f)).hom ≤ hom_to_dq f.hom :=

@@ -1,5 +1,5 @@
-import solid.extend_equiv_rke
-import solid.loc_const_colim
+import discrete.extend_equiv_rke
+import discrete.loc_const_colim
 
 noncomputable theory
 
