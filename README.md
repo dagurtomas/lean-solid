@@ -2,18 +2,20 @@
 
 This repository is a snapshot of my formalisation of an equivalence of three different definitions of discrete condensed sets.
 
-It is forked from the Liquid Tensor Experiment (see https://github.com/leanprover-community/lean-liquid.git and more about it below), and builds on lots of the basic definitions and results about condensed sets and abelian groups formalised there.
+It is forked from the Liquid Tensor Experiment (LTE, see https://github.com/leanprover-community/lean-liquid.git), and builds on lots of the basic definitions and results about condensed sets formalised there.
+
+The main results are in the file `src/discrete/discrete_comparison.lean` along with a description.
 
 ## Getting and browsing the repository
 
 * Install a Lean development environment following the
   [installation instructions](https://leanprover-community.github.io/get_started.html#regular-install).
-* To download and open a copy of the repository
-  by executing the following command in a terminal:
+* To download and open a copy of the repository, execute the following command in a terminal:
   ```
   leanproject get dagurtomas/lean-solid
   cd lean-solid
-  ./scripts/fetch_olean_cache.sh
-  code lean-solid
+  git checkout discrete
+  lean --make src/discrete/discrete_comparison.lean
   ```
-* Everything added by me for the project about solid abelian groups so far is contained in the directory src/solid/
+  The last command will take a while but it builds the file with the main results and all its dependencies. This should allow to browse the project in VS Code with good interactive speed.
+* All code written by me is contained in the directory `src/discrete/`. Everything else is unchanged from LTE.
