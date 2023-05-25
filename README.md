@@ -1,4 +1,4 @@
-# Formalising solid abelian groups
+# Formalising discrete condensed sets
 
 This repository is a snapshot of my formalisation of an equivalence of three different definitions of discrete condensed sets.
 
