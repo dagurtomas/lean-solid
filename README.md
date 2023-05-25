@@ -12,9 +12,9 @@ It is forked from the Liquid Tensor Experiment (see https://github.com/leanprove
   by executing the following command in a terminal:
   ```
   leanproject get dagurtomas/lean-solid
-  code lean-solid
   leanproject get-mathlib-cache
   ./scripts/fetch-olean-cache.sh
+  code lean-solid
   ```
 * Everything added by me for the project about solid abelian groups so far is contained in the directory src/solid/
 
