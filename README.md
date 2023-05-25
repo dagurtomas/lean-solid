@@ -1,6 +1,6 @@
 # Formalising solid abelian groups
 
-The goal of this repository is to formalise the definition of solid abelian groups and theorems about them from Lectures V and VI in the lecture notes [Condensed.pdf](https://people.mpim-bonn.mpg.de/scholze/Condensed.pdf) by Peter Scholze.
+This repository is a snapshot of my formalisation of an equivalence of three different definitions of discrete condensed sets.
 
 It is forked from the Liquid Tensor Experiment (see https://github.com/leanprover-community/lean-liquid.git and more about it below), and builds on lots of the basic definitions and results about condensed sets and abelian groups formalised there.
 
