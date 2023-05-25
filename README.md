@@ -13,8 +13,7 @@ It is forked from the Liquid Tensor Experiment (see https://github.com/leanprove
   ```
   leanproject get dagurtomas/lean-solid
   cd lean-solid
-  leanproject get-mathlib-cache
-  ./scripts/fetch-olean-cache.sh
+  ./scripts/fetch_olean_cache.sh
   code lean-solid
   ```
 * Everything added by me for the project about solid abelian groups so far is contained in the directory src/solid/
