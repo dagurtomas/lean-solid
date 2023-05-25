@@ -15,7 +15,9 @@ The main results are in the file `src/discrete/discrete_comparison.lean` along w
   leanproject get dagurtomas/lean-solid
   cd lean-solid
   git checkout discrete
+  ./scripts/get-cache.sh
+  ./scripts/fetch_olean_cache.sh
   lean --make src/discrete/discrete_comparison.lean
   ```
-  The last command will take a while but it builds the file with the main results and all its dependencies. This should allow to browse the project in VS Code with good interactive speed.
+  I'm not sure the scripts `get-cache` and `fetch_olean_cache` are actually doing anything, but they are supposed to get oleans for LTE. If they don't work, the last command will take a really long time, but it is necessary to build the file with the main results and all its dependencies. This should allow to browse the project in VS Code with good interactive speed.
 * All code written by me is contained in the directory `src/discrete/`. Everything else is unchanged from LTE.
