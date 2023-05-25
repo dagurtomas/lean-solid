@@ -12,6 +12,7 @@ It is forked from the Liquid Tensor Experiment (see https://github.com/leanprove
   by executing the following command in a terminal:
   ```
   leanproject get dagurtomas/lean-solid
+  cd lean-solid
   leanproject get-mathlib-cache
   ./scripts/fetch-olean-cache.sh
   code lean-solid
